@@ -17,10 +17,9 @@
         </encoder>
     </appender>
 
-    <logger name="com.example.ytpodcast" level="DEBUG"/>
+    <logger name="net.dinomite.ytpodcast" level="DEBUG"/>
     <logger name="io.ktor" level="INFO"/>
-    <logger name="com.github.kiulian" level="INFO"/>
-    
+
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="FILE"/>

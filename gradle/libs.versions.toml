@@ -1,8 +1,7 @@
 [versions]
-kotlin = "2.2.+"
-ktor = "3.3.+"
+kotlin = "2.3.+"
+ktor = "3.4.+"
 logback = "1.5.+"
-jave = "3.+"
 kotlinx-coroutines = "1.+"
 
 [libraries]
@@ -25,22 +24,9 @@ ktor-client-contentNegotiation = { module = "io.ktor:ktor-client-content-negotia
 klogging = { module = "io.klogging:klogging", version = "0.+" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
-# Jave
-jave-core = { module = "ws.schild:jave-core", version.ref = "jave" }
-jave-native-linux = { module = "ws.schild:jave-nativebin-linux64", version.ref = "jave" }
-jave-native-win = { module = "ws.schild:jave-nativebin-win64", version.ref = "jave" }
-jave-native-osx = { module = "ws.schild:jave-nativebin-osx64", version.ref = "jave" }
-
-# XML/RSS generation
-rome = { module = "com.rometools:rome", version = "2.1.0" }
-rome-modules = { module = "com.rometools:rome-modules", version = "2.1.0" }
-
 # Coroutines
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
-
-# Caching
-caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version = "3.1.8" }
 
 # Testing
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.10.2" }
@@ -49,17 +35,7 @@ mockk = { module = "io.mockk:mockk", version = "1.13.8" }
 assertj-core = { module = "org.assertj:assertj-core", version = "3.24.2" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 
-youtube-downloader = { module = "com.github.sealedtx:java-youtube-downloader", version = "3.+" }
-
 [bundles]
-# Bundles remain unchanged
-jave = [
-    "jave-core",
-    "jave-native-linux",
-    "jave-native-win",
-    "jave-native-osx"
-]
-
 ktor-client = [
     "ktor-client-core",
     "ktor-client-cio",
