@@ -18,7 +18,6 @@ fun main() {
 }
 
 fun Application.module() {
-    // Configure plugins
     configureSerialization()
     configureMonitoring()
     configureHTTP()

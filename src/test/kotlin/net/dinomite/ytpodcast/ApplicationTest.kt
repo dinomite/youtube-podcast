@@ -1,5 +1,7 @@
 package net.dinomite.ytpodcast
 
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -9,7 +11,6 @@ import net.dinomite.ytpodcast.plugins.configureHTTP
 import net.dinomite.ytpodcast.plugins.configureMonitoring
 import net.dinomite.ytpodcast.plugins.configureRouting
 import net.dinomite.ytpodcast.plugins.configureSerialization
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class ApplicationTest {
@@ -20,8 +21,8 @@ class ApplicationTest {
         }
 
         client.get("/").apply {
-            assertThat(status).isEqualTo(HttpStatusCode.OK)
-            assertThat(bodyAsText()).isEqualTo("YouTube to Podcast RSS Feed Converter")
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe "YouTube to Podcast RSS Feed Converter"
         }
     }
 
@@ -32,8 +33,8 @@ class ApplicationTest {
         }
 
         client.get("/health").apply {
-            assertThat(status).isEqualTo(HttpStatusCode.OK)
-            assertThat(bodyAsText()).contains("healthy")
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldContain "healthy"
         }
     }
 
@@ -44,7 +45,7 @@ class ApplicationTest {
         }
 
         client.get("/unknown-endpoint").apply {
-            assertThat(status).isEqualTo(HttpStatusCode.NotFound)
+            status shouldBe HttpStatusCode.NotFound
         }
     }
 
