@@ -7,7 +7,7 @@ plugins {
     id("io.gitlab.arturbosch.detekt") version "1.23.4"
 }
 
-group = "com.example"
+group = "net.dinomite"
 version = "1.0.0"
 
 repositories {
@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.ktor.server.cors)
 
     // Logging
+    implementation(libs.klogging)
     implementation(libs.logback.classic)
 
     // YouTube library
@@ -38,6 +39,7 @@ dependencies {
 
     // XML/RSS generation
     implementation(libs.rome)
+    implementation(libs.rome.modules)
 
     // Logging (no change needed)
     implementation(libs.logback.classic)

@@ -1,20 +1,17 @@
-package com.example.ytpodcast.models
+package net.dinomite.ytpodcast.models
 
 import kotlinx.serialization.Serializable
-import java.time.Instant
 
-@Serializable
 data class PlaylistInfo(
     val id: String,
     val title: String,
     val description: String?,
     val author: String?,
-    val thumbnailUrl: String?,
-    val videos: List<VideoInfo>
+    val videos: List<ResponseVideoInfo>
 )
 
 @Serializable
-data class VideoInfo(
+data class ResponseVideoInfo(
     val id: String,
     val title: String,
     val description: String?,
@@ -25,32 +22,24 @@ data class VideoInfo(
 )
 
 @Serializable
-data class PodcastFeedRequest(
-    val playlistUrl: String
-)
+data class PodcastFeedRequest(val playlistUrl: String)
 
 @Serializable
-data class ErrorResponse(
-    val error: String,
-    val message: String
-)
+data class ErrorResponse(val error: String, val message: String)
 
-data class AudioData(
-    val data: ByteArray,
-    val contentType: String = "audio/mpeg"
-) {
+data class AudioData(val data: ByteArray, val contentType: String = "audio/mpeg") {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
-        
+
         other as AudioData
-        
+
         if (!data.contentEquals(other.data)) return false
         if (contentType != other.contentType) return false
-        
+
         return true
     }
-    
+
     override fun hashCode(): Int {
         var result = data.contentHashCode()
         result = 31 * result + contentType.hashCode()

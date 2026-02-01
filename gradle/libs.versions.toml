@@ -22,6 +22,7 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-contentNegotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 
+klogging = { module = "io.klogging:klogging", version = "0.+" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
 # Jave
@@ -32,6 +33,7 @@ jave-native-osx = { module = "ws.schild:jave-nativebin-osx64", version.ref = "ja
 
 # XML/RSS generation
 rome = { module = "com.rometools:rome", version = "2.1.0" }
+rome-modules = { module = "com.rometools:rome-modules", version = "2.1.0" }
 
 # Coroutines
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
@@ -42,6 +44,7 @@ caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version = "3.1.8
 
 # Testing
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.10.2" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.10.2" }
 mockk = { module = "io.mockk:mockk", version = "1.13.8" }
 assertj-core = { module = "org.assertj:assertj-core", version = "3.24.2" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
@@ -65,6 +68,7 @@ ktor-client = [
 
 testing = [
     "junit-jupiter",
+    "junit-platform-launcher",
     "kotlin-test-junit",
     "ktor-server-test-host",
     "mockk",
