@@ -15,10 +15,8 @@ import org.slf4j.LoggerFactory
  * - Playlist metadata fetching
  * - Video metadata fetching
  * - Audio extraction and download
- *
- * @property json JSON parser instance for deserializing yt-dlp output
  */
-open class YtDlpExecutor(private val json: Json = jsonParser) {
+open class YtDlpExecutor {
     private val logger = LoggerFactory.getLogger(YtDlpExecutor::class.java)
 
     /**
@@ -31,7 +29,7 @@ open class YtDlpExecutor(private val json: Json = jsonParser) {
     open fun fetchPlaylist(playlistId: String): PlaylistMetadata {
         val command = buildPlaylistCommand(playlistId)
         val output = executeCommand(command)
-        return parsePlaylistJson(output, json)
+        return parsePlaylistJson(output, jsonParser)
     }
 
     /**
@@ -44,7 +42,7 @@ open class YtDlpExecutor(private val json: Json = jsonParser) {
     open fun fetchVideo(videoId: String): VideoMetadata {
         val command = buildVideoCommand(videoId)
         val output = executeCommand(command)
-        return parseVideoJson(output, json)
+        return parseVideoJson(output, jsonParser)
     }
 
     /**
