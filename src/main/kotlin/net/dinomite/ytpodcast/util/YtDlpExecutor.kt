@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
  *
  * @property json JSON parser instance for deserializing yt-dlp output
  */
-class YtDlpExecutor(private val json: Json = Json { ignoreUnknownKeys = true }) {
+open class YtDlpExecutor(private val json: Json = Json { ignoreUnknownKeys = true }) {
     private val logger = LoggerFactory.getLogger(YtDlpExecutor::class.java)
 
     /**
@@ -28,7 +28,7 @@ class YtDlpExecutor(private val json: Json = Json { ignoreUnknownKeys = true }) 
      * @return Parsed playlist metadata including video entries
      * @throws YtDlpException if the command fails or output cannot be parsed
      */
-    fun fetchPlaylist(playlistId: String): PlaylistMetadata {
+    open fun fetchPlaylist(playlistId: String): PlaylistMetadata {
         val command = buildPlaylistCommand(playlistId)
         val output = executeCommand(command)
         return parsePlaylistJson(output, json)
@@ -41,7 +41,7 @@ class YtDlpExecutor(private val json: Json = Json { ignoreUnknownKeys = true }) 
      * @return Parsed video metadata
      * @throws YtDlpException if the command fails or output cannot be parsed
      */
-    fun fetchVideo(videoId: String): VideoMetadata {
+    open fun fetchVideo(videoId: String): VideoMetadata {
         val command = buildVideoCommand(videoId)
         val output = executeCommand(command)
         return parseVideoJson(output, json)
@@ -54,7 +54,7 @@ class YtDlpExecutor(private val json: Json = Json { ignoreUnknownKeys = true }) 
      * @param outputFile The file to write the audio to
      * @throws YtDlpException if the download fails or output file is not created
      */
-    fun downloadAudio(videoId: String, outputFile: File) {
+    open fun downloadAudio(videoId: String, outputFile: File) {
         val command = buildDownloadCommand(videoId, outputFile.absolutePath)
         executeCommand(command, timeoutMinutes = 10)
         if (!outputFile.exists()) {
