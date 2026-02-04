@@ -3,12 +3,14 @@ package net.dinomite.ytpodcast
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.application.Application
 import io.ktor.server.testing.testApplication
+import io.ktor.utils.io.toByteArray
 import net.dinomite.ytpodcast.config.AppConfig
 import net.dinomite.ytpodcast.models.PlaylistMetadata
 import net.dinomite.ytpodcast.models.VideoMetadata
@@ -84,6 +86,40 @@ class IntegrationTest {
         }
 
         client.get("/show/nonexistent").apply {
+            status shouldBe HttpStatusCode.NotFound
+            bodyAsText() shouldContain "not_found"
+        }
+    }
+
+    @Test
+    fun `GET episode returns MP3 file for valid video`() = testApplication {
+        val stubExecutor = StubYtDlpExecutor()
+        val fakeAudioContent = "fake MP3 content for testing".toByteArray()
+        stubExecutor.givenAudio("testvideo", fakeAudioContent)
+
+        application {
+            testModuleWithStub(stubExecutor)
+        }
+
+        client.get("/episode/testvideo.mp3").apply {
+            status shouldBe HttpStatusCode.OK
+            contentType()?.withoutParameters() shouldBe ContentType.Audio.MPEG
+
+            val responseBytes = bodyAsChannel().toByteArray()
+            responseBytes shouldBe fakeAudioContent
+        }
+    }
+
+    @Test
+    fun `GET episode returns 404 for non-existent video`() = testApplication {
+        val stubExecutor = StubYtDlpExecutor()
+        // Don't configure any audio - it will throw "unavailable"
+
+        application {
+            testModuleWithStub(stubExecutor)
+        }
+
+        client.get("/episode/nonexistent.mp3").apply {
             status shouldBe HttpStatusCode.NotFound
             bodyAsText() shouldContain "not_found"
         }
