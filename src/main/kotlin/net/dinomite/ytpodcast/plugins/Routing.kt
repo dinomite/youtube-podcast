@@ -26,7 +26,12 @@ import net.dinomite.ytpodcast.util.YtDlpExecutor
 import org.slf4j.LoggerFactory
 
 fun Application.configureRouting(appConfig: AppConfig) {
-    val ytDlpExecutor = YtDlpExecutor(json())
+    val json = Json { ignoreUnknownKeys = true }
+    val ytDlpExecutor = YtDlpExecutor(json)
+    configureRouting(appConfig, ytDlpExecutor)
+}
+
+fun Application.configureRouting(appConfig: AppConfig, ytDlpExecutor: YtDlpExecutor) {
     val youTubeMetadataService = YouTubeMetadataService(ytDlpExecutor)
     val urlBuilder = UrlBuilder(appConfig.baseUrl)
     val rssFeedService = RssFeedService(urlBuilder)
