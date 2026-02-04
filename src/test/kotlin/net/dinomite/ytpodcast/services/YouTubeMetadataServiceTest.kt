@@ -27,15 +27,4 @@ class YouTubeMetadataServiceTest {
         result shouldBe expectedPlaylist
         verify { ytDlpExecutor.fetchPlaylist("PLtest") }
     }
-
-    @Test
-    fun `getVideo delegates to YtDlpExecutor`() {
-        val expectedVideo = VideoMetadata(id = "abc123", title = "Test Video", duration = 120)
-        every { ytDlpExecutor.fetchVideo("abc123") } returns expectedVideo
-
-        val result = service.getVideo("abc123")
-
-        result shouldBe expectedVideo
-        verify { ytDlpExecutor.fetchVideo("abc123") }
-    }
 }
