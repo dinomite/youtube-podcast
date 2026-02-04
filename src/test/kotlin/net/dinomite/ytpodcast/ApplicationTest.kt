@@ -7,6 +7,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.testing.testApplication
+import net.dinomite.ytpodcast.config.AppConfig
 import net.dinomite.ytpodcast.plugins.configureHTTP
 import net.dinomite.ytpodcast.plugins.configureMonitoring
 import net.dinomite.ytpodcast.plugins.configureRouting
@@ -53,6 +54,6 @@ class ApplicationTest {
         configureSerialization()
         configureMonitoring()
         configureHTTP()
-        configureRouting()
+        configureRouting(AppConfig())
     }
 }
