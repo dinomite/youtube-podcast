@@ -1,10 +1,10 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ktor)
+    alias(libs.plugins.kotlin.serialization)
 
-    kotlin("plugin.serialization") version "1.9.21"
-    id("org.jlleitschuh.gradle.ktlint") version "12.0.3"
-    id("io.gitlab.arturbosch.detekt") version "1.23.4"
+    id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
+    id("io.gitlab.arturbosch.detekt") version "1.23.8"
 }
 
 group = "net.dinomite"
@@ -31,26 +31,7 @@ dependencies {
     implementation(libs.klogging)
     implementation(libs.logback.classic)
 
-    // YouTube library
-    implementation(libs.youtube.downloader)
-
-    // JAVE - Multimedia transcoding (using the bundle)
-    implementation(libs.bundles.jave)
-
-    // XML/RSS generation
-    implementation(libs.rome)
-    implementation(libs.rome.modules)
-
-    // Logging (no change needed)
-    implementation(libs.logback.classic)
-
-    // Coroutines
-    implementation(libs.kotlinx.coroutines.core)
-
-    // Caching
-    implementation(libs.caffeine)
-
-    // Testing (using the bundle)
+    // Testing
     testImplementation(libs.bundles.testing)
 
     // Ktor Client (for testing)
@@ -62,12 +43,12 @@ tasks.test {
 }
 
 application {
-    mainClass.set("com.example.ytpodcast.ApplicationKt")
+    mainClass.set("net.dinomite.ytpodcast.ApplicationKt")
 }
 
 ktlint {
     // Should match IntelliJ ktlint plugin version https://github.com/nbadal/ktlint-intellij-plugin
-    version.set("1.7.1")
+    version.set("1.8.0")
 }
 
 detekt {
