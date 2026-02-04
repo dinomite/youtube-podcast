@@ -1,12 +1,12 @@
 package net.dinomite.ytpodcast.util
 
+import java.io.File
+import java.util.concurrent.TimeUnit
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import net.dinomite.ytpodcast.models.PlaylistMetadata
 import net.dinomite.ytpodcast.models.VideoMetadata
 import org.slf4j.LoggerFactory
-import java.io.File
-import java.util.concurrent.TimeUnit
 
 /**
  * Executes yt-dlp CLI commands for fetching YouTube metadata and downloading audio.
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
  *
  * @property json JSON parser instance for deserializing yt-dlp output
  */
-open class YtDlpExecutor(private val json: Json = Json { ignoreUnknownKeys = true }) {
+open class YtDlpExecutor(private val json: Json = jsonParser) {
     private val logger = LoggerFactory.getLogger(YtDlpExecutor::class.java)
 
     /**
@@ -87,6 +87,8 @@ open class YtDlpExecutor(private val json: Json = Json { ignoreUnknownKeys = tru
     }
 
     companion object {
+        val jsonParser = Json { ignoreUnknownKeys = true }
+
         /**
          * Parses yt-dlp NDJSON output into playlist metadata.
          *

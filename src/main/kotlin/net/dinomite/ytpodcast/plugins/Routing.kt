@@ -14,7 +14,6 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
-import kotlinx.serialization.json.Json
 import net.dinomite.ytpodcast.config.AppConfig
 import net.dinomite.ytpodcast.models.ErrorResponse
 import net.dinomite.ytpodcast.services.AudioService
@@ -26,8 +25,7 @@ import net.dinomite.ytpodcast.util.YtDlpExecutor
 import org.slf4j.LoggerFactory
 
 fun Application.configureRouting(appConfig: AppConfig) {
-    val json = Json { ignoreUnknownKeys = true }
-    val ytDlpExecutor = YtDlpExecutor(json)
+    val ytDlpExecutor = YtDlpExecutor()
     configureRouting(appConfig, ytDlpExecutor)
 }
 
@@ -52,8 +50,6 @@ fun Application.configureRouting(appConfig: AppConfig, ytDlpExecutor: YtDlpExecu
         handlers.registerEpisodeRoute(this)
     }
 }
-
-fun json() = Json { ignoreUnknownKeys = true }
 
 /**
  * Holds route handler implementations with their dependencies.

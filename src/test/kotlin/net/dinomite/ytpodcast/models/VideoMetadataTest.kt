@@ -1,11 +1,11 @@
 package net.dinomite.ytpodcast.models
 
 import io.kotest.matchers.shouldBe
-import kotlinx.serialization.json.Json
+import net.dinomite.ytpodcast.util.YtDlpExecutor
 import org.junit.jupiter.api.Test
 
 class VideoMetadataTest {
-    private val json = Json { ignoreUnknownKeys = true }
+    private val json = YtDlpExecutor.jsonParser
 
     @Test
     fun `parses yt-dlp video JSON`() {

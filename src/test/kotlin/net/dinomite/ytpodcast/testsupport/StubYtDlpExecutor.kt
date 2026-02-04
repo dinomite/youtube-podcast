@@ -1,4 +1,4 @@
-package net.dinomite.ytpodcast.testing
+package net.dinomite.ytpodcast.testsupport
 
 import java.io.File
 import net.dinomite.ytpodcast.models.PlaylistMetadata
