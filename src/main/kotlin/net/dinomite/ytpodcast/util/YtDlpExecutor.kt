@@ -1,12 +1,12 @@
 package net.dinomite.ytpodcast.util
 
-import java.io.File
-import java.util.concurrent.TimeUnit
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import net.dinomite.ytpodcast.models.PlaylistMetadata
 import net.dinomite.ytpodcast.models.VideoMetadata
 import org.slf4j.LoggerFactory
+import java.io.File
+import java.util.concurrent.TimeUnit
 
 /**
  * Executes yt-dlp CLI commands for fetching YouTube metadata and downloading audio.
@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory
  *
  * @property json JSON parser instance for deserializing yt-dlp output
  */
-class YtDlpExecutor(private val json: Json = Json { ignoreUnknownKeys = true },) {
+class YtDlpExecutor(private val json: Json = Json { ignoreUnknownKeys = true }) {
     private val logger = LoggerFactory.getLogger(YtDlpExecutor::class.java)
 
     /**
@@ -88,15 +88,35 @@ class YtDlpExecutor(private val json: Json = Json { ignoreUnknownKeys = true },)
 
     companion object {
         /**
-         * Parses yt-dlp JSON output into playlist metadata.
+         * Parses yt-dlp NDJSON output into playlist metadata.
          *
-         * @param jsonText The JSON string from yt-dlp
+         * yt-dlp --flat-playlist returns NDJSON (one JSON object per line),
+         * where each line is a video entry containing playlist metadata fields.
+         *
+         * @param jsonText The NDJSON string from yt-dlp
          * @param json The JSON parser to use
          * @return Parsed playlist metadata
          * @throws YtDlpException if parsing fails
          */
         fun parsePlaylistJson(jsonText: String, json: Json): PlaylistMetadata = try {
-            json.decodeFromString<PlaylistMetadata>(jsonText)
+            val lines = jsonText.trim().lines().filter { it.isNotBlank() }
+            if (lines.isEmpty()) {
+                throw YtDlpException("No video entries found in playlist output")
+            }
+
+            // Parse all video entries
+            val videos = lines.map { line ->
+                json.decodeFromString<VideoMetadata>(line)
+            }
+
+            // Extract playlist metadata from first entry
+            val first = videos.first()
+            PlaylistMetadata(
+                id = first.playlistId ?: throw YtDlpException("No playlist_id found in output"),
+                title = first.playlistTitle ?: throw YtDlpException("No playlist_title found in output"),
+                uploader = first.playlistUploader,
+                entries = videos,
+            )
         } catch (e: SerializationException) {
             throw YtDlpException("Failed to parse playlist JSON: ${e.message}", e)
         } catch (e: IllegalArgumentException) {
