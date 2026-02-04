@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-YouTube to Podcast RSS Feed Converter - a Kotlin/Ktor web service that converts YouTube playlists into podcast feeds with audio streaming.
+YouTube to Podcast RSS Feed Converter - a Kotlin/Ktor web service that converts YouTube playlists into podcast feeds of audio files.
 
 ## Build Commands
 
@@ -39,8 +39,8 @@ Run a single test:
 **API Routes** (defined in `plugins/Routing.kt`):
 - `GET /` - Root endpoint
 - `GET /health` - Health check
-- `GET /feed/{playlistId}` - RSS feed for a YouTube playlist
-- `GET /show/{showId}/episodes/{episodeId}.mp3` - Audio file streaming
+- `GET /show/{playlistId}` - RSS feed for a YouTube playlist
+- `GET /episode/{videoId}.mp3` - Audio file for episode
 
 ## Testing
 
