@@ -1,5 +1,6 @@
 package net.dinomite.ytpodcast
 
+import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.ktor.client.request.get
@@ -47,6 +48,32 @@ class ApplicationTest {
 
         client.get("/unknown-endpoint").apply {
             status shouldBe HttpStatusCode.NotFound
+        }
+    }
+
+    @Test
+    fun `test show endpoint returns error for invalid playlist`() = testApplication {
+        application {
+            testModule()
+        }
+
+        client.get("/show/invalid-playlist-id").apply {
+            // Will fail because yt-dlp can't find the playlist
+            // Returns 404 if error contains "not found", otherwise 500
+            status.value shouldBeGreaterThanOrEqual 400
+        }
+    }
+
+    @Test
+    fun `test episode endpoint returns error for invalid video`() = testApplication {
+        application {
+            testModule()
+        }
+
+        client.get("/episode/invalid-video-id.mp3").apply {
+            // Will fail because yt-dlp can't find the video
+            // Returns 404 if error contains "not found", otherwise 500
+            status.value shouldBeGreaterThanOrEqual 400
         }
     }
 
