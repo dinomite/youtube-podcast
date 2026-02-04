@@ -34,17 +34,48 @@ Run a single test:
 
 **Source structure**:
 - `plugins/` - Ktor plugin configurations (Serialization, Monitoring, HTTP, Routing)
-- `models/` - Data classes (DTOs)
+- `models/` - Data classes (ErrorResponse, PlaylistMetadata, VideoMetadata)
+- `services/` - Business logic services (RssFeedService, AudioService, YouTubeMetadataService)
+- `util/` - Utilities (YtDlpExecutor, UrlBuilder, YtDlpException)
+- `config/` - Application configuration (AppConfig)
 
 **API Routes** (defined in `plugins/Routing.kt`):
 - `GET /` - Root endpoint
 - `GET /health` - Health check
-- `GET /show/{playlistId}` - RSS feed for a YouTube playlist
-- `GET /episode/{videoId}.mp3` - Audio file for episode
+- `GET /show/{playlistId}` - RSS feed for a YouTube playlist (content-type: application/rss+xml)
+- `GET /episode/{videoId}.mp3` - Audio file for episode (content-type: audio/mpeg)
+
+**Routing Architecture**:
+- Two `configureRouting()` overloads: one using real YtDlpExecutor, one accepting injected executor for testing
+- `RouteHandlers` private class encapsulating endpoint logic
+- Sophisticated error handling via `YtDlpErrorConfig` - maps yt-dlp errors to HTTP status codes
+- Returns 404 for "not found" errors, 500 for other failures
+
+**Service Layer**:
+- `YouTubeMetadataService` - Fetches playlist/video metadata via yt-dlp
+- `RssFeedService` - Generates RSS XML with iTunes podcast namespace, handles XML escaping, sorting
+- `AudioService` - Downloads audio to temp directory
+- `UrlBuilder` - Intelligent URL generation using AppConfig or request context
 
 ## Testing
 
-Uses Ktor's `testApplication` for integration testing with kotest matchers (`shouldBe`, `shouldContain`). Tests configure the application module identically to production via `testModule()`.
+**Test Structure**:
+- `ApplicationTest.kt` - Basic endpoint tests (/, /health, 404, error handling)
+- `IntegrationTest.kt` - Full integration tests organized with `@Nested` classes by endpoint:
+  - `GetShow` - Tests for `/show/{playlistId}` (success and 404 cases)
+  - `GetEpisode` - Tests for `/episode/{videoId}.mp3` (success and 404 cases)
+- Unit tests for services (`RssFeedServiceTest`, `AudioServiceTest`, `YouTubeMetadataServiceTest`)
+- Unit tests for utilities (`UrlBuilderTest`, `YtDlpExecutorTest`)
+- Model tests (`PlaylistMetadataTest`, `VideoMetadataTest`)
+
+**Test Infrastructure**:
+- `testsupport/StubYtDlpExecutor.kt` - Test double extending YtDlpExecutor with:
+  - `givenPlaylist(id, metadata)` - Configures stub responses for playlist fetches
+  - `givenAudio(videoId, content)` - Configures stub responses for audio downloads
+  - Throws `YtDlpException` for unconfigured requests
+- Uses Ktor's `testApplication` with dependency injection via `configureRouting()` overload
+- kotest matchers (`shouldBe`, `shouldContain`) for assertions
+- JUnit 5 with `@Nested` classes for test organization
 
 ## Code Style
 
