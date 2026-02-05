@@ -31,7 +31,7 @@ fun Application.configureRouting(
     val youTubeMetadataService = YouTubeMetadataService(ytDlpExecutor)
     val urlBuilder = UrlBuilder(appConfig.baseUrl)
     val rssFeedService = RssFeedService(urlBuilder)
-    val audioService = AudioService(ytDlpExecutor)
+    val audioService = AudioService(ytDlpExecutor, System.getProperty("java.io.tmpdir"))
 
     val handlers = RouteHandlers(youTubeMetadataService, rssFeedService, audioService)
 
