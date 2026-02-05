@@ -1,0 +1,27 @@
+# Build outputs
+build/
+.gradle/
+*.log
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# Test outputs
+test-results/
+
+# Mac
+.DS_Store
+
+# Temporary files
+tmp/
+*.tmp
