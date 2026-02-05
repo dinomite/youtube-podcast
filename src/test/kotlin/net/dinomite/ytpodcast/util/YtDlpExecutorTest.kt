@@ -73,6 +73,7 @@ class YtDlpExecutorTest {
 
         command shouldBe listOf(
             "yt-dlp",
+            "--js-runtimes", "nodejs",
             "--flat-playlist",
             "--dump-json",
             "https://www.youtube.com/playlist?list=PLtest123",
@@ -85,6 +86,7 @@ class YtDlpExecutorTest {
 
         command shouldBe listOf(
             "yt-dlp",
+            "--js-runtimes", "nodejs",
             "--dump-json",
             "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         )
@@ -96,6 +98,7 @@ class YtDlpExecutorTest {
 
         command shouldBe listOf(
             "yt-dlp",
+            "--js-runtimes", "nodejs",
             "-x",
             "--audio-format", "mp3",
             "--audio-quality", "0",
