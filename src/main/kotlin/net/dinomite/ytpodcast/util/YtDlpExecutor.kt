@@ -33,19 +33,6 @@ open class YtDlpExecutor {
     }
 
     /**
-     * Fetches metadata for a single YouTube video.
-     *
-     * @param videoId The YouTube video ID
-     * @return Parsed video metadata
-     * @throws YtDlpException if the command fails or output cannot be parsed
-     */
-    open fun fetchVideo(videoId: String): VideoMetadata {
-        val command = buildVideoCommand(videoId)
-        val output = executeCommand(command)
-        return parseVideoJson(output, jsonParser)
-    }
-
-    /**
      * Downloads audio from a YouTube video as MP3.
      *
      * @param videoId The YouTube video ID
