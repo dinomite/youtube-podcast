@@ -36,6 +36,7 @@ class CacheService(private val audioService: AudioService, private val config: C
         }
 
         logger.info("Cache MISS: videoId=$videoId")
+        evictIfNeeded()
         logger.info("Downloading: videoId=$videoId")
         val downloadedFile = audioService.downloadToTempFile(videoId)
         logger.info("Download complete: videoId=$videoId, size=${formatSize(downloadedFile.length())}")
@@ -72,6 +73,13 @@ class CacheService(private val audioService: AudioService, private val config: C
         val totalCount = files.size
 
         logger.info("Cache current state: files=$totalCount, size=${formatSize(totalSize)}")
+
+        evictIfNeeded()
+
+        val postFiles = listCacheFiles()
+        val postSize = postFiles.sumOf { it.length() }
+        val postCount = postFiles.size
+        logger.info("Cache post-cleanup: files=$postCount, size=${formatSize(postSize)}")
     }
 
     private fun touchFile(file: File) {
@@ -94,5 +102,55 @@ class CacheService(private val audioService: AudioService, private val config: C
         bytes >= 1024 * 1024 -> "%.2f MB".format(bytes / (1024.0 * 1024))
         bytes >= 1024 -> "%.2f KB".format(bytes / 1024.0)
         else -> "$bytes B"
+    }
+
+    private fun evictIfNeeded() {
+        val files = listCacheFiles()
+        val totalSize = files.sumOf { it.length() }
+        val totalCount = files.size
+
+        if (isWithinLimits(totalSize, totalCount)) {
+            return
+        }
+
+        logger.info(
+            "Eviction starting: currentFiles=$totalCount, currentSize=${formatSize(totalSize)}, reason=over-limit"
+        )
+
+        // Sort by last modified time (oldest first = least recently used)
+        val sortedFiles = files.sortedBy { it.lastModified() }
+
+        var currentSize = totalSize
+        var currentCount = totalCount
+        var removedCount = 0
+        var freedSpace = 0L
+
+        for (file in sortedFiles) {
+            if (isWithinLimits(currentSize, currentCount)) {
+                break
+            }
+
+            val fileSize = file.length()
+            val ageMinutes = (System.currentTimeMillis() - file.lastModified()) / 60000
+
+            val deleted = file.delete()
+            if (deleted) {
+                currentSize -= fileSize
+                currentCount -= 1
+                removedCount += 1
+                freedSpace += fileSize
+                logger.info("Evicted: file=${file.name}, size=${formatSize(fileSize)}, age=${ageMinutes}min")
+            } else {
+                logger.warn("Failed to delete file: ${file.name}")
+            }
+        }
+
+        logger.info("Eviction complete: removedFiles=$removedCount, freedSpace=${formatSize(freedSpace)}")
+    }
+
+    private fun isWithinLimits(currentSize: Long, currentCount: Int): Boolean {
+        val sizeOk = config.maxSize == 0L || currentSize <= config.maxSize
+        val countOk = config.maxCount == 0 || currentCount <= config.maxCount
+        return sizeOk && countOk
     }
 }
