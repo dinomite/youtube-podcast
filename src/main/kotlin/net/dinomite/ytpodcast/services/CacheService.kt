@@ -56,13 +56,13 @@ class CacheService(private val audioService: AudioService, private val config: C
             val created = cacheDir.mkdirs()
             if (!created) {
                 logger.error("Failed to create cache directory: ${config.directory}")
-                throw IllegalStateException("Cannot initialize cache")
+                error("Cannot initialize cache")
             }
         }
 
         if (!cacheDir.canRead() || !cacheDir.canWrite()) {
             logger.error("Cache directory not accessible: ${config.directory}")
-            throw IllegalStateException("Cannot access cache directory")
+            error("Cannot access cache directory")
         }
 
         logger.info("Cache initialization starting: directory=${config.directory}")
