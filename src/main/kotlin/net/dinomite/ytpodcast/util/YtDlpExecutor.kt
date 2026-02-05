@@ -1,12 +1,12 @@
 package net.dinomite.ytpodcast.util
 
+import java.io.File
+import java.util.concurrent.TimeUnit
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import net.dinomite.ytpodcast.models.PlaylistMetadata
 import net.dinomite.ytpodcast.models.VideoMetadata
 import org.slf4j.LoggerFactory
-import java.io.File
-import java.util.concurrent.TimeUnit
 
 /**
  * Executes yt-dlp CLI commands for fetching YouTube metadata and downloading audio.
@@ -15,10 +15,8 @@ import java.util.concurrent.TimeUnit
  * - Playlist metadata fetching
  * - Video metadata fetching
  * - Audio extraction and download
- *
- * @property json JSON parser instance for deserializing yt-dlp output
  */
-class YtDlpExecutor(private val json: Json = Json { ignoreUnknownKeys = true }) {
+open class YtDlpExecutor {
     private val logger = LoggerFactory.getLogger(YtDlpExecutor::class.java)
 
     /**
@@ -28,10 +26,10 @@ class YtDlpExecutor(private val json: Json = Json { ignoreUnknownKeys = true }) 
      * @return Parsed playlist metadata including video entries
      * @throws YtDlpException if the command fails or output cannot be parsed
      */
-    fun fetchPlaylist(playlistId: String): PlaylistMetadata {
+    open fun fetchPlaylist(playlistId: String): PlaylistMetadata {
         val command = buildPlaylistCommand(playlistId)
         val output = executeCommand(command)
-        return parsePlaylistJson(output, json)
+        return parsePlaylistJson(output, jsonParser)
     }
 
     /**
@@ -41,10 +39,10 @@ class YtDlpExecutor(private val json: Json = Json { ignoreUnknownKeys = true }) 
      * @return Parsed video metadata
      * @throws YtDlpException if the command fails or output cannot be parsed
      */
-    fun fetchVideo(videoId: String): VideoMetadata {
+    open fun fetchVideo(videoId: String): VideoMetadata {
         val command = buildVideoCommand(videoId)
         val output = executeCommand(command)
-        return parseVideoJson(output, json)
+        return parseVideoJson(output, jsonParser)
     }
 
     /**
@@ -54,7 +52,7 @@ class YtDlpExecutor(private val json: Json = Json { ignoreUnknownKeys = true }) 
      * @param outputFile The file to write the audio to
      * @throws YtDlpException if the download fails or output file is not created
      */
-    fun downloadAudio(videoId: String, outputFile: File) {
+    open fun downloadAudio(videoId: String, outputFile: File) {
         val command = buildDownloadCommand(videoId, outputFile.absolutePath)
         executeCommand(command, timeoutMinutes = 10)
         if (!outputFile.exists()) {
@@ -87,6 +85,8 @@ class YtDlpExecutor(private val json: Json = Json { ignoreUnknownKeys = true }) 
     }
 
     companion object {
+        val jsonParser = Json { ignoreUnknownKeys = true }
+
         /**
          * Parses yt-dlp NDJSON output into playlist metadata.
          *

@@ -1,7 +1,6 @@
 package net.dinomite.ytpodcast.services
 
 import net.dinomite.ytpodcast.models.PlaylistMetadata
-import net.dinomite.ytpodcast.models.VideoMetadata
 import net.dinomite.ytpodcast.util.YtDlpExecutor
 
 /**
@@ -20,12 +19,4 @@ class YouTubeMetadataService(private val ytDlpExecutor: YtDlpExecutor) {
      * @return Playlist metadata including video entries
      */
     fun getPlaylist(playlistId: String): PlaylistMetadata = ytDlpExecutor.fetchPlaylist(playlistId)
-
-    /**
-     * Fetches metadata for a single YouTube video.
-     *
-     * @param videoId The YouTube video ID
-     * @return Video metadata
-     */
-    fun getVideo(videoId: String): VideoMetadata = ytDlpExecutor.fetchVideo(videoId)
 }

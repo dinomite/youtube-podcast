@@ -3,12 +3,11 @@ package net.dinomite.ytpodcast.util
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import net.dinomite.ytpodcast.plugins.json
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class YtDlpExecutorTest {
-    private val json = json()
+    private val json = YtDlpExecutor.jsonParser
 
     @Nested
     inner class ParsePlaylistJson {

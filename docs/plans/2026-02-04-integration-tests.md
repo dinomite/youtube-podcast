@@ -112,7 +112,7 @@ git commit -m "refactor: add configureRouting overload accepting YtDlpExecutor"
 **Step 1: Create the stub class**
 
 ```kotlin
-package net.dinomite.ytpodcast.testing
+package net.dinomite.ytpodcast.testsupport
 
 import net.dinomite.ytpodcast.models.PlaylistMetadata
 import net.dinomite.ytpodcast.models.VideoMetadata
@@ -194,7 +194,7 @@ import net.dinomite.ytpodcast.plugins.configureHTTP
 import net.dinomite.ytpodcast.plugins.configureMonitoring
 import net.dinomite.ytpodcast.plugins.configureRouting
 import net.dinomite.ytpodcast.plugins.configureSerialization
-import net.dinomite.ytpodcast.testing.StubYtDlpExecutor
+import net.dinomite.ytpodcast.testsupport.StubYtDlpExecutor
 import org.junit.jupiter.api.Test
 
 class IntegrationTest {
