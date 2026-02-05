@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Copy gradle files first for better layer caching
 COPY gradle ./gradle
-COPY gradlew build.gradle.kts settings.gradle.kts gradle.properties ./
+COPY gradlew build.gradle.kts settings.gradle.kts ./
 COPY gradle/libs.versions.toml ./gradle/
 
 # Download dependencies
@@ -20,12 +20,13 @@ RUN ./gradlew installDist --no-daemon
 # Runtime stage
 FROM eclipse-temurin:21-jre-jammy
 
-# Install yt-dlp and ffmpeg (required for audio extraction)
+# Install yt-dlp, ffmpeg, and Node.js (required for YouTube extraction)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         python3 \
         python3-pip \
         ffmpeg \
+        nodejs \
         curl && \
     curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
     chmod a+rx /usr/local/bin/yt-dlp && \
