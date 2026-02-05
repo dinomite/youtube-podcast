@@ -3,5 +3,6 @@ ktlint_code_style = intellij_idea
 max_line_length = 120
 ktlint_standard_trailing-comma-on-call-site = disabled
 ktlint_standard_trailing-comma-on-declaration-site = disabled
+ktlint_standard_function-signature = disabled
 # Use lexicographically sorted imports
 ij_kotlin_imports_layout = *

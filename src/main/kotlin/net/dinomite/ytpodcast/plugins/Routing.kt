@@ -24,12 +24,10 @@ import net.dinomite.ytpodcast.util.YtDlpException
 import net.dinomite.ytpodcast.util.YtDlpExecutor
 import org.slf4j.LoggerFactory
 
-fun Application.configureRouting(appConfig: AppConfig) {
-    val ytDlpExecutor = YtDlpExecutor()
-    configureRouting(appConfig, ytDlpExecutor)
-}
-
-fun Application.configureRouting(appConfig: AppConfig, ytDlpExecutor: YtDlpExecutor) {
+fun Application.configureRouting(
+    appConfig: AppConfig,
+    ytDlpExecutor: YtDlpExecutor = YtDlpExecutor(),
+) {
     val youTubeMetadataService = YouTubeMetadataService(ytDlpExecutor)
     val urlBuilder = UrlBuilder(appConfig.baseUrl)
     val rssFeedService = RssFeedService(urlBuilder)

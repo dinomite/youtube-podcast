@@ -27,35 +27,36 @@ class IntegrationTest {
     inner class GetShow {
         @Test
         fun `GET show returns RSS feed for valid playlist`() = testApplication {
-            val stubExecutor = StubYtDlpExecutor()
-            stubExecutor.givenPlaylist(
-                "PLtest123",
-                PlaylistMetadata(
-                    id = "PLtest123",
-                    title = "Test Playlist",
-                    description = "A test playlist for integration testing",
-                    uploader = "Test Channel",
-                    thumbnail = "https://example.com/thumb.jpg",
-                    entries = listOf(
-                        VideoMetadata(
-                            id = "video1",
-                            title = "First Video",
-                            description = "First video description",
-                            duration = 180,
-                            uploadDate = "20240115",
-                            uploader = "Test Channel",
-                        ),
-                        VideoMetadata(
-                            id = "video2",
-                            title = "Second Video",
-                            description = "Second video description",
-                            duration = 240,
-                            uploadDate = "20240120",
-                            uploader = "Test Channel",
+            val stubExecutor = StubYtDlpExecutor().apply {
+                givenPlaylist(
+                    "PLtest123",
+                    PlaylistMetadata(
+                        id = "PLtest123",
+                        title = "Test Playlist",
+                        description = "A test playlist for integration testing",
+                        uploader = "Test Channel",
+                        thumbnail = "https://example.com/thumb.jpg",
+                        entries = listOf(
+                            VideoMetadata(
+                                id = "video1",
+                                title = "First Video",
+                                description = "First video description",
+                                duration = 180,
+                                uploadDate = "20240115",
+                                uploader = "Test Channel",
+                            ),
+                            VideoMetadata(
+                                id = "video2",
+                                title = "Second Video",
+                                description = "Second video description",
+                                duration = 240,
+                                uploadDate = "20240120",
+                                uploader = "Test Channel",
+                            ),
                         ),
                     ),
-                ),
-            )
+                )
+            }
 
             application {
                 testModuleWithStub(stubExecutor)
