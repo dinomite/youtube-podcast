@@ -20,20 +20,22 @@ RUN ./gradlew installDist --no-daemon
 # Runtime stage
 FROM eclipse-temurin:21-jre-jammy
 
-# Install yt-dlp, ffmpeg, and Node.js (required for YouTube extraction)
+# Install yt-dlp, ffmpeg, and Deno (required for YouTube extraction)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         python3 \
         python3-pip \
         ffmpeg \
-        nodejs \
-        curl && \
+        curl \
+        unzip && \
+    curl -fsSL https://deno.land/install.sh | sh && \
+    mv /root/.deno/bin/deno /usr/local/bin/ && \
     curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
     chmod a+rx /usr/local/bin/yt-dlp && \
-    apt-get remove -y curl && \
+    apt-get remove -y curl unzip && \
     apt-get autoremove -y && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* /root/.deno
 
 WORKDIR /app
 

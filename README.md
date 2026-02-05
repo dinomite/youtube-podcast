@@ -14,7 +14,7 @@ A Kotlin/Ktor web service that converts YouTube playlists into podcast RSS feeds
 - Java 21 or higher
 - yt-dlp CLI tool (for running locally)
 - ffmpeg (required by yt-dlp for audio extraction)
-- Node.js (required by yt-dlp for YouTube extraction)
+- Deno (required by yt-dlp for YouTube extraction)
 
 ## Running Locally
 
