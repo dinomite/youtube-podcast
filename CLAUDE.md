@@ -35,9 +35,9 @@ Run a single test:
 **Source structure**:
 - `plugins/` - Ktor plugin configurations (Serialization, Monitoring, HTTP, Routing)
 - `models/` - Data classes (ErrorResponse, PlaylistMetadata, VideoMetadata)
-- `services/` - Business logic services (RssFeedService, AudioService, YouTubeMetadataService)
-- `util/` - Utilities (YtDlpExecutor, UrlBuilder, YtDlpException)
-- `config/` - Application configuration (AppConfig)
+- `services/` - Business logic services (RssFeedService, AudioService, CacheService, YouTubeMetadataService)
+- `util/` - Utilities (YtDlpExecutor, UrlBuilder, SizeParser, YtDlpException)
+- `config/` - Application configuration (AppConfig: baseUrl, tempDir; CacheConfig: maxSize, maxCount, directory)
 
 **API Routes** (defined in `plugins/Routing.kt`):
 - `GET /` - Root endpoint
@@ -54,7 +54,8 @@ Run a single test:
 **Service Layer**:
 - `YouTubeMetadataService` - Fetches playlist/video metadata via yt-dlp
 - `RssFeedService` - Generates RSS XML with iTunes podcast namespace, handles XML escaping, sorting
-- `AudioService` - Downloads audio to temp directory
+- `AudioService` - Downloads audio to configured temp directory
+- `CacheService` - Manages cached audio files with LRU eviction, enforces size/count limits
 - `UrlBuilder` - Intelligent URL generation using AppConfig or request context
 
 ## Testing
