@@ -10,6 +10,9 @@ import net.dinomite.ytpodcast.plugins.configureHTTP
 import net.dinomite.ytpodcast.plugins.configureMonitoring
 import net.dinomite.ytpodcast.plugins.configureRouting
 import net.dinomite.ytpodcast.plugins.configureSerialization
+import net.dinomite.ytpodcast.services.AudioService
+import net.dinomite.ytpodcast.services.CacheService
+import net.dinomite.ytpodcast.util.YtDlpExecutor
 import net.dinomite.ytpodcast.util.parseSize
 
 fun main() {
@@ -23,10 +26,18 @@ fun main() {
 
 fun Application.module() {
     val appConfig = loadAppConfig(environment.config)
+    val cacheConfig = loadCacheConfig(environment.config, appConfig.tempDir)
+
+    val ytDlpExecutor = YtDlpExecutor()
+    val audioService = AudioService(ytDlpExecutor, cacheConfig.directory)
+    val cacheService = CacheService(audioService, cacheConfig)
+
+    cacheService.initialize()
+
     configureSerialization()
     configureMonitoring()
     configureHTTP()
-    configureRouting(appConfig)
+    configureRouting(appConfig, cacheService)
 }
 
 fun loadAppConfig(config: ApplicationConfig): AppConfig = AppConfig(
