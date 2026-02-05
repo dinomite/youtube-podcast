@@ -134,7 +134,7 @@ open class YtDlpExecutor {
          */
         fun buildPlaylistCommand(playlistId: String): List<String> = listOf(
             "yt-dlp",
-            "--js-runtimes", "nodejs",
+            "--js-runtimes", "node",
             "--flat-playlist",
             "--dump-json",
             "https://www.youtube.com/playlist?list=$playlistId",
@@ -148,7 +148,7 @@ open class YtDlpExecutor {
          */
         fun buildVideoCommand(videoId: String): List<String> = listOf(
             "yt-dlp",
-            "--js-runtimes", "nodejs",
+            "--js-runtimes", "node",
             "--dump-json",
             "https://www.youtube.com/watch?v=$videoId",
         )
@@ -162,7 +162,7 @@ open class YtDlpExecutor {
          */
         fun buildDownloadCommand(videoId: String, outputPath: String): List<String> = listOf(
             "yt-dlp",
-            "--js-runtimes", "nodejs",
+            "--js-runtimes", "node",
             "-x",
             "--audio-format", "mp3",
             "--audio-quality", "0",
