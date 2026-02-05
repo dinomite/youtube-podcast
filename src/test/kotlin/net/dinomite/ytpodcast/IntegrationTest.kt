@@ -137,6 +137,12 @@ class IntegrationTest {
         configureSerialization()
         configureMonitoring()
         configureHTTP()
-        configureRouting(AppConfig(baseUrl = "https://test.example.com"), stubExecutor)
+        configureRouting(
+            AppConfig(
+                baseUrl = "https://test.example.com",
+                tempDir = System.getProperty("java.io.tmpdir")
+            ),
+            stubExecutor
+        )
     }
 }

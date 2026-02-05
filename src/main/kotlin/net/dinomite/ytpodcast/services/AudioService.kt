@@ -12,10 +12,7 @@ import net.dinomite.ytpodcast.util.YtDlpExecutor
  * @property ytDlpExecutor The executor for running yt-dlp commands
  * @property tempDir The directory to use for temporary audio files
  */
-class AudioService(
-    private val ytDlpExecutor: YtDlpExecutor,
-    private val tempDir: String,
-) {
+class AudioService(private val ytDlpExecutor: YtDlpExecutor, private val tempDir: String,) {
     /**
      * Downloads the audio from a YouTube video to a temporary file.
      *
