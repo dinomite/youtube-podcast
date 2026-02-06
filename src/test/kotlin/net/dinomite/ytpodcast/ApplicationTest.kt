@@ -82,7 +82,10 @@ class ApplicationTest {
     }
 
     private fun Application.testModule() {
-        val appConfig = AppConfig()
+        val appConfig = AppConfig(
+            baseUrl = "",
+            tempDir = System.getProperty("java.io.tmpdir")
+        )
         val cacheConfig = CacheConfig(
             maxSize = 0L,
             maxCount = 0,
@@ -91,6 +94,7 @@ class ApplicationTest {
         val ytDlpExecutor = YtDlpExecutor()
         val audioService = AudioService(ytDlpExecutor, cacheConfig.directory)
         val cacheService = CacheService(audioService, cacheConfig)
+        cacheService.initialize()
 
         configureSerialization()
         configureMonitoring()
