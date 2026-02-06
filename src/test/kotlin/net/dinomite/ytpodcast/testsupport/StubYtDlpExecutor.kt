@@ -20,7 +20,7 @@ class StubYtDlpExecutor : YtDlpExecutor() {
     override fun fetchPlaylist(playlistId: String): PlaylistMetadata = playlists[playlistId]
         ?: throw YtDlpException("yt-dlp failed with exit code 1: Playlist not found: $playlistId")
 
-    override fun downloadAudio(videoId: String, outputFile: File) {
+    override fun downloadRawAudio(videoId: String, outputFile: File) {
         val content = audioContent[videoId]
             ?: throw YtDlpException("yt-dlp failed with exit code 1: Video unavailable: $videoId")
         outputFile.writeBytes(content)

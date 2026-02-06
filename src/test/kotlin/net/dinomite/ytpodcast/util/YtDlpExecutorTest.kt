@@ -91,15 +91,15 @@ class YtDlpExecutorTest {
     }
 
     @Test
-    fun `buildDownloadCommand builds correct command`() {
-        val command = YtDlpExecutor.buildDownloadCommand("dQw4w9WgXcQ", "/tmp/output.mp3")
+    fun `buildRawDownloadCommand builds correct command`() {
+        val command = YtDlpExecutor.buildRawDownloadCommand("dQw4w9WgXcQ", "/tmp/output")
 
         command shouldBe listOf(
             "yt-dlp",
-            "-x",
-            "--audio-format", "mp3",
-            "--audio-quality", "0",
-            "-o", "/tmp/output.mp3",
+            "-f",
+            "bestaudio",
+            "-o",
+            "/tmp/output",
             "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         )
     }

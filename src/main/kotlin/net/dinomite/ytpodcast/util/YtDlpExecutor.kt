@@ -33,14 +33,14 @@ open class YtDlpExecutor {
     }
 
     /**
-     * Downloads audio from a YouTube video as MP3.
+     * Downloads raw audio from a YouTube video (no conversion).
      *
      * @param videoId The YouTube video ID
-     * @param outputFile The file to write the audio to
+     * @param outputFile The file to write the raw audio to
      * @throws YtDlpException if the download fails or output file is not created
      */
-    open fun downloadAudio(videoId: String, outputFile: File) {
-        val command = buildDownloadCommand(videoId, outputFile.absolutePath)
+    open fun downloadRawAudio(videoId: String, outputFile: File) {
+        val command = buildRawDownloadCommand(videoId, outputFile.absolutePath)
         executeCommand(command, timeoutMinutes = 10)
         if (!outputFile.exists()) {
             throw YtDlpException("Download completed but output file not found: ${outputFile.absolutePath}")
@@ -152,18 +152,18 @@ open class YtDlpExecutor {
         )
 
         /**
-         * Builds the yt-dlp command for downloading audio.
+         * Builds the yt-dlp command for downloading raw audio (no conversion).
          *
          * @param videoId The YouTube video ID
          * @param outputPath The output file path
          * @return Command arguments list
          */
-        fun buildDownloadCommand(videoId: String, outputPath: String): List<String> = listOf(
+        fun buildRawDownloadCommand(videoId: String, outputPath: String): List<String> = listOf(
             "yt-dlp",
-            "-x",
-            "--audio-format", "mp3",
-            "--audio-quality", "0",
-            "-o", outputPath,
+            "-f",
+            "bestaudio",
+            "-o",
+            outputPath,
             "https://www.youtube.com/watch?v=$videoId",
         )
     }
