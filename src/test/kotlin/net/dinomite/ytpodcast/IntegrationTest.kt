@@ -2,6 +2,7 @@ package net.dinomite.ytpodcast
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.ktor.client.request.basicAuth
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.bodyAsText
@@ -15,6 +16,7 @@ import net.dinomite.ytpodcast.config.AppConfig
 import net.dinomite.ytpodcast.config.CacheConfig
 import net.dinomite.ytpodcast.models.PlaylistMetadata
 import net.dinomite.ytpodcast.models.VideoMetadata
+import net.dinomite.ytpodcast.plugins.configureAuthentication
 import net.dinomite.ytpodcast.plugins.configureHTTP
 import net.dinomite.ytpodcast.plugins.configureMonitoring
 import net.dinomite.ytpodcast.plugins.configureRouting
@@ -66,7 +68,9 @@ class IntegrationTest {
                 testModuleWithStub(stubExecutor)
             }
 
-            client.get("/show/PLtest123").apply {
+            client.get("/show/PLtest123") {
+                basicAuth("testuser", "testpass")
+            }.apply {
                 status shouldBe HttpStatusCode.OK
                 contentType()?.withoutParameters() shouldBe ContentType.Application.Rss
 
@@ -93,7 +97,9 @@ class IntegrationTest {
                 testModuleWithStub(stubExecutor)
             }
 
-            client.get("/show/nonexistent").apply {
+            client.get("/show/nonexistent") {
+                basicAuth("testuser", "testpass")
+            }.apply {
                 status shouldBe HttpStatusCode.NotFound
                 bodyAsText() shouldContain "not_found"
             }
@@ -112,7 +118,9 @@ class IntegrationTest {
                 testModuleWithStub(stubExecutor)
             }
 
-            client.get("/episode/testvideo.mp3").apply {
+            client.get("/episode/testvideo.mp3") {
+                basicAuth("testuser", "testpass")
+            }.apply {
                 status shouldBe HttpStatusCode.OK
                 contentType()?.withoutParameters() shouldBe ContentType.Audio.MPEG
 
@@ -130,9 +138,123 @@ class IntegrationTest {
                 testModuleWithStub(stubExecutor)
             }
 
-            client.get("/episode/nonexistent.mp3").apply {
+            client.get("/episode/nonexistent.mp3") {
+                basicAuth("testuser", "testpass")
+            }.apply {
                 status shouldBe HttpStatusCode.NotFound
                 bodyAsText() shouldContain "not_found"
+            }
+        }
+    }
+
+    @Nested
+    inner class Authentication {
+        @Test
+        fun `GET show with valid credentials returns RSS feed`() = testApplication {
+            val stubExecutor = StubYtDlpExecutor().apply {
+                givenPlaylist(
+                    "PLtest123",
+                    PlaylistMetadata(
+                        id = "PLtest123",
+                        title = "Test Playlist",
+                        description = "Test playlist",
+                        uploader = "Test Channel",
+                        thumbnail = "https://example.com/thumb.jpg",
+                        entries = emptyList(),
+                    ),
+                )
+            }
+
+            application {
+                testModuleWithStub(stubExecutor)
+            }
+
+            client.get("/show/PLtest123") {
+                basicAuth("testuser", "testpass")
+            }.apply {
+                status shouldBe HttpStatusCode.OK
+                contentType()?.withoutParameters() shouldBe ContentType.Application.Rss
+            }
+        }
+
+        @Test
+        fun `GET show without credentials returns 401`() = testApplication {
+            val stubExecutor = StubYtDlpExecutor()
+
+            application {
+                testModuleWithStub(stubExecutor)
+            }
+
+            client.get("/show/PLtest123").apply {
+                status shouldBe HttpStatusCode.Unauthorized
+            }
+        }
+
+        @Test
+        fun `GET show with invalid credentials returns 401`() = testApplication {
+            val stubExecutor = StubYtDlpExecutor()
+
+            application {
+                testModuleWithStub(stubExecutor)
+            }
+
+            client.get("/show/PLtest123") {
+                basicAuth("wronguser", "wrongpass")
+            }.apply {
+                status shouldBe HttpStatusCode.Unauthorized
+            }
+        }
+
+        @Test
+        fun `GET episode with valid credentials returns audio`() = testApplication {
+            val stubExecutor = StubYtDlpExecutor()
+            val fakeAudioContent = "fake MP3 content".toByteArray()
+            stubExecutor.givenAudio("testvideo", fakeAudioContent)
+
+            application {
+                testModuleWithStub(stubExecutor)
+            }
+
+            client.get("/episode/testvideo.mp3") {
+                basicAuth("testuser", "testpass")
+            }.apply {
+                status shouldBe HttpStatusCode.OK
+                contentType()?.withoutParameters() shouldBe ContentType.Audio.MPEG
+            }
+        }
+
+        @Test
+        fun `GET episode without credentials returns 401`() = testApplication {
+            val stubExecutor = StubYtDlpExecutor()
+
+            application {
+                testModuleWithStub(stubExecutor)
+            }
+
+            client.get("/episode/testvideo.mp3").apply {
+                status shouldBe HttpStatusCode.Unauthorized
+            }
+        }
+
+        @Test
+        fun `GET health without credentials succeeds`() = testApplication {
+            application {
+                testModuleWithStub(StubYtDlpExecutor())
+            }
+
+            client.get("/health").apply {
+                status shouldBe HttpStatusCode.OK
+            }
+        }
+
+        @Test
+        fun `GET root without credentials succeeds`() = testApplication {
+            application {
+                testModuleWithStub(StubYtDlpExecutor())
+            }
+
+            client.get("/").apply {
+                status shouldBe HttpStatusCode.OK
             }
         }
     }
@@ -142,7 +264,9 @@ class IntegrationTest {
         val appConfig = AppConfig(
             baseUrl = "https://test.example.com",
             tempDir = tempDir,
-            cacheDir = "$tempDir/test-cache"
+            cacheDir = "$tempDir/test-cache",
+            authUsername = "testuser",
+            authPassword = "testpass",
         )
         val cacheConfig = CacheConfig(
             maxSize = 0L,
@@ -157,6 +281,7 @@ class IntegrationTest {
         configureSerialization()
         configureMonitoring()
         configureHTTP()
+        configureAuthentication(appConfig)
         configureRouting(appConfig, youTubeMetadataService, cacheService)
     }
 }

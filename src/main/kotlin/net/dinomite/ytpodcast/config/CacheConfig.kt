@@ -12,8 +12,8 @@ import net.dinomite.ytpodcast.util.parseSize
  */
 data class CacheConfig(val maxSize: Long, val maxCount: Int, val directory: String) {
     constructor(config: ApplicationConfig, cacheDir: String) : this(
-        maxSize = parseSize(config.propertyOrNull("ytpodcast.cache.maxSize")?.getString() ?: "5GB"),
-        maxCount = config.propertyOrNull("ytpodcast.cache.maxCount")?.getString()?.toInt() ?: 100,
+        maxSize = parseSize(config.getStringOrNull("ytpodcast.cache.maxSize") ?: "5GB"),
+        maxCount = config.getStringOrNull("ytpodcast.cache.maxCount")?.toInt() ?: 100,
         directory = cacheDir
     )
 }
