@@ -150,6 +150,7 @@ class IntegrationTest {
         val youTubeMetadataService = YouTubeMetadataService(stubExecutor)
         val audioService = AudioService(stubExecutor, cacheConfig.directory)
         val cacheService = CacheService(audioService, cacheConfig)
+        cacheService.initialize()
 
         configureSerialization()
         configureMonitoring()
