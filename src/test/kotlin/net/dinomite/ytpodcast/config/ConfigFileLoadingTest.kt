@@ -24,6 +24,6 @@ class ConfigFileLoadingTest {
         appConfig.authUsername shouldBe "testuser"
         appConfig.authPassword shouldBe "testpass"
         appConfig.baseUrl shouldBe "http://localhost:8080"
-        appConfig.tempDir shouldBe "/tmp/ytpodcast"
+        appConfig.tempDir shouldBe "/tmp/ytpodcast/tmp"
     }
 }
