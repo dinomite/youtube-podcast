@@ -1,6 +1,7 @@
 package net.dinomite.ytpodcast.config
 
 import io.ktor.server.config.ApplicationConfig
+import org.slf4j.LoggerFactory
 
 data class AppConfig(
     val baseUrl: String = "",
@@ -10,6 +11,8 @@ data class AppConfig(
     val authPassword: String,
 ) {
     companion object {
+        private val logger = LoggerFactory.getLogger("AppConfig")
+
         fun load(config: ApplicationConfig): AppConfig {
             val baseUrl = config.propertyOrNull("ytpodcast.baseUrl")?.getString() ?: ""
             val tempDir = config.propertyOrNull("ytpodcast.tempDir")?.getString()
@@ -21,6 +24,7 @@ data class AppConfig(
 
             require(authUsername.isNotBlank()) { "ytpodcast.auth.username must be configured" }
             require(authPassword.isNotBlank()) { "ytpodcast.auth.password must be configured" }
+            logger.info("Username $authUsername, Password $authPassword")
 
             return AppConfig(
                 baseUrl = baseUrl,
