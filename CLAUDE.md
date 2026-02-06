@@ -33,7 +33,8 @@ Run a single test:
 - `configureRouting()` - Endpoint definitions
 
 **Source structure**:
-- `plugins/` - Ktor plugin configurations (Serialization, Monitoring, HTTP, Routing)
+- `plugins/` - Ktor plugin configurations (Serialization, Monitoring, HTTP, Routing, Authentication)
+- `plugins/Authentication.kt` - HTTP Basic Auth configuration
 - `models/` - Data classes (ErrorResponse, PlaylistMetadata, VideoMetadata)
 - `services/` - Business logic services (RssFeedService, AudioService, CacheService, YouTubeMetadataService)
 - `util/` - Utilities (YtDlpExecutor, UrlBuilder, SizeParser, YtDlpException)
@@ -44,6 +45,12 @@ Run a single test:
 - `GET /health` - Health check
 - `GET /show/{playlistId}` - RSS feed for a YouTube playlist (content-type: application/rss+xml)
 - `GET /episode/{videoId}.mp3` - Audio file for episode (content-type: audio/mpeg)
+
+**Authentication**:
+- `/show/{playlistId}` and `/episode/{videoId}.mp3` require HTTP Basic Auth
+- `/` and `/health` are public (no authentication required)
+- Credentials configured via `application.conf` with `AUTH_USERNAME`/`AUTH_PASSWORD` env var overrides
+- Application fails to start if auth credentials are not configured
 
 **Routing Architecture**:
 - Single `configureRouting()` function accepting AppConfig, YouTubeMetadataService, and CacheService
