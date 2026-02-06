@@ -11,10 +11,24 @@ import org.junit.jupiter.api.Test
 
 class AudioServiceTest {
     private val ytDlpExecutor = mockk<YtDlpExecutor>()
-    private val audioService = AudioService(ytDlpExecutor)
+
+    @Test
+    fun `downloadToTempFile uses configured temp directory`() {
+        val customTempDir = System.getProperty("java.io.tmpdir").trimEnd('/')
+        val audioService = AudioService(ytDlpExecutor, customTempDir)
+        val fileSlot = slot<File>()
+        every { ytDlpExecutor.downloadAudio("abc123", capture(fileSlot)) } answers {
+            fileSlot.captured.writeText("fake mp3 content")
+        }
+
+        audioService.downloadToTempFile("abc123")
+
+        fileSlot.captured.parent shouldBe customTempDir
+    }
 
     @Test
     fun `downloadToTempFile calls YtDlpExecutor with temp file`() {
+        val audioService = AudioService(ytDlpExecutor, System.getProperty("java.io.tmpdir"))
         val fileSlot = slot<File>()
         every { ytDlpExecutor.downloadAudio("abc123", capture(fileSlot)) } answers {
             fileSlot.captured.writeText("fake mp3 content")
@@ -33,6 +47,7 @@ class AudioServiceTest {
 
     @Test
     fun `downloadToTempFile creates file in temp directory`() {
+        val audioService = AudioService(ytDlpExecutor, System.getProperty("java.io.tmpdir"))
         val fileSlot = slot<File>()
         every { ytDlpExecutor.downloadAudio("xyz789", capture(fileSlot)) } answers {
             fileSlot.captured.writeText("content")

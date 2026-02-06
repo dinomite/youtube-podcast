@@ -1,14 +1,18 @@
 package net.dinomite.ytpodcast
 
 import io.ktor.server.application.Application
-import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import net.dinomite.ytpodcast.config.AppConfig
+import net.dinomite.ytpodcast.config.CacheConfig
 import net.dinomite.ytpodcast.plugins.configureHTTP
 import net.dinomite.ytpodcast.plugins.configureMonitoring
 import net.dinomite.ytpodcast.plugins.configureRouting
 import net.dinomite.ytpodcast.plugins.configureSerialization
+import net.dinomite.ytpodcast.services.AudioService
+import net.dinomite.ytpodcast.services.CacheService
+import net.dinomite.ytpodcast.services.YouTubeMetadataService
+import net.dinomite.ytpodcast.util.YtDlpExecutor
 
 fun main() {
     embeddedServer(
@@ -20,13 +24,18 @@ fun main() {
 }
 
 fun Application.module() {
-    val appConfig = loadAppConfig(environment.config)
+    val appConfig = AppConfig(environment.config)
+    val cacheConfig = CacheConfig(environment.config, appConfig.tempDir)
+
+    val ytDlpExecutor = YtDlpExecutor()
+    val youTubeMetadataService = YouTubeMetadataService(ytDlpExecutor)
+    val audioService = AudioService(ytDlpExecutor, cacheConfig.directory)
+    val cacheService = CacheService(audioService, cacheConfig)
+
+    cacheService.initialize()
+
     configureSerialization()
     configureMonitoring()
     configureHTTP()
-    configureRouting(appConfig)
+    configureRouting(appConfig, youTubeMetadataService, cacheService)
 }
-
-fun loadAppConfig(config: ApplicationConfig): AppConfig = AppConfig(
-    baseUrl = config.propertyOrNull("ytpodcast.baseUrl")?.getString() ?: "",
-)

@@ -91,6 +91,18 @@ The application can be configured via environment variables:
 - `PORT` - Server port (default: 8080)
 - `BASE_URL` - Base URL for generating episode URLs in RSS feeds (optional)
 - `JAVA_OPTS` - JVM options (Docker only, default: `-Xmx512m -Xms256m`)
+- `TEMP_DIR` - Directory for cached audio files (default: system temp directory)
+- `CACHE_MAX_SIZE` - Maximum cache size (default: 5GB, "0" for unlimited)
+- `CACHE_MAX_COUNT` - Maximum number of cached files (default: 100, 0 for unlimited)
+
+### Cache Management
+
+Downloaded audio files are cached to improve performance. The cache uses LRU (Least Recently Used) eviction when limits are reached:
+
+- Size and count limits are enforced simultaneously
+- Least recently accessed files are deleted first
+- Cache is cleaned up on startup and before each download
+- Set limits to "0" to disable that constraint
 
 ## Architecture
 

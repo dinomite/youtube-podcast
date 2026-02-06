@@ -35,9 +35,9 @@ Run a single test:
 **Source structure**:
 - `plugins/` - Ktor plugin configurations (Serialization, Monitoring, HTTP, Routing)
 - `models/` - Data classes (ErrorResponse, PlaylistMetadata, VideoMetadata)
-- `services/` - Business logic services (RssFeedService, AudioService, YouTubeMetadataService)
-- `util/` - Utilities (YtDlpExecutor, UrlBuilder, YtDlpException)
-- `config/` - Application configuration (AppConfig)
+- `services/` - Business logic services (RssFeedService, AudioService, CacheService, YouTubeMetadataService)
+- `util/` - Utilities (YtDlpExecutor, UrlBuilder, SizeParser, YtDlpException)
+- `config/` - Application configuration (AppConfig: baseUrl, tempDir; CacheConfig: maxSize, maxCount, directory)
 
 **API Routes** (defined in `plugins/Routing.kt`):
 - `GET /` - Root endpoint
@@ -46,7 +46,7 @@ Run a single test:
 - `GET /episode/{videoId}.mp3` - Audio file for episode (content-type: audio/mpeg)
 
 **Routing Architecture**:
-- Two `configureRouting()` overloads: one using real YtDlpExecutor, one accepting injected executor for testing
+- Single `configureRouting()` function accepting AppConfig, YouTubeMetadataService, and CacheService
 - `RouteHandlers` private class encapsulating endpoint logic
 - Sophisticated error handling via `YtDlpErrorConfig` - maps yt-dlp errors to HTTP status codes
 - Returns 404 for "not found" errors, 500 for other failures
@@ -54,7 +54,8 @@ Run a single test:
 **Service Layer**:
 - `YouTubeMetadataService` - Fetches playlist/video metadata via yt-dlp
 - `RssFeedService` - Generates RSS XML with iTunes podcast namespace, handles XML escaping, sorting
-- `AudioService` - Downloads audio to temp directory
+- `AudioService` - Downloads audio to configured temp directory
+- `CacheService` - Manages cached audio files with LRU eviction, enforces size/count limits
 - `UrlBuilder` - Intelligent URL generation using AppConfig or request context
 
 ## Testing
@@ -73,7 +74,7 @@ Run a single test:
   - `givenPlaylist(id, metadata)` - Configures stub responses for playlist fetches
   - `givenAudio(videoId, content)` - Configures stub responses for audio downloads
   - Throws `YtDlpException` for unconfigured requests
-- Uses Ktor's `testApplication` with dependency injection via `configureRouting()` overload
+- Uses Ktor's `testApplication` with dependency injection via test helper functions (`testModule()`, `testModuleWithStub()`)
 - kotest matchers (`shouldBe`, `shouldContain`) for assertions
 - JUnit 5 with `@Nested` classes for test organization
 
