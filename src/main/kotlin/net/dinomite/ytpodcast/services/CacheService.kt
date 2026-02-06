@@ -7,51 +7,13 @@ import org.slf4j.LoggerFactory
 /**
  * Service for managing cached audio files with LRU eviction.
  *
- * Provides caching layer over AudioService to avoid re-downloading
- * frequently accessed audio files. Enforces size and count limits
+ * Provides cache lookup and eviction. Enforces size and count limits
  * through LRU (Least Recently Used) eviction.
  *
- * @property audioService The underlying audio download service
  * @property config Cache configuration (limits and directory)
  */
-class CacheService(private val audioService: AudioService, private val config: CacheConfig,) {
+class CacheService(private val config: CacheConfig) {
     private val logger = LoggerFactory.getLogger(CacheService::class.java)
-
-    /**
-     * Gets an audio file, either from cache or by downloading.
-     *
-     * If the file exists in cache, returns it immediately and updates
-     * its access time. If not in cache, downloads via AudioService.
-     *
-     * @param videoId The YouTube video ID
-     * @return The audio file (from cache or newly downloaded)
-     */
-    fun getAudioFile(videoId: String): File {
-        val cacheFile = File(config.directory, "$videoId.mp3")
-
-        if (cacheFile.exists()) {
-            logger.info("Cache HIT: videoId=$videoId")
-            touchFile(cacheFile)
-            return cacheFile
-        }
-
-        logger.info("Cache MISS: videoId=$videoId")
-        evictIfNeeded()
-        logger.info("Downloading: videoId=$videoId")
-        val downloadedFile = audioService.downloadToTempFile(videoId)
-        logger.info("Download complete: videoId=$videoId, size=${formatSize(downloadedFile.length())}")
-
-        // Move from temp to cache directory
-        val moved = downloadedFile.renameTo(cacheFile)
-        return if (moved) {
-            logger.info("Cached: videoId=$videoId")
-            cacheFile
-        } else {
-            logger.warn("Failed to move file (${downloadedFile.absolutePath}) to cache dir (${cacheFile.absolutePath})")
-            // Fallback: serve from temp
-            downloadedFile
-        }
-    }
 
     /**
      * Returns the cached audio file if it exists, or null if not cached.

@@ -32,7 +32,7 @@ fun Application.testModuleWithStub(stubExecutor: StubYtDlpExecutor) {
     val stubFfmpegExecutor = StubFfmpegExecutor()
     val youTubeMetadataService = YouTubeMetadataService(stubExecutor)
     val audioService = AudioService(stubExecutor, appConfig.tempDir)
-    val cacheService = CacheService(audioService, cacheConfig)
+    val cacheService = CacheService(cacheConfig)
     val streamingAudioService = StreamingAudioService(audioService, stubFfmpegExecutor, cacheConfig.directory)
     cacheService.initialize()
 
