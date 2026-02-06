@@ -4,11 +4,17 @@ services:
     ports:
       - "8080:8080"
     environment:
+      # Required: Authentication credentials
+      - AUTH_USERNAME=dev
+      - AUTH_PASSWORD=dev
+      # Required: Temporary directory for audio files
+      - TEMP_DIR=/tmp/ytpodcast
+      # Optional: Base URL for episode links
       - BASE_URL=http://localhost:8080
       # Optional: Override Java memory settings
       # - JAVA_OPTS=-Xmx1g -Xms512m
     volumes:
-      # Optional: Mount a volume for temporary audio files
+      # Mount a volume for temporary audio files and cache
       - audio-cache:/tmp
     restart: unless-stopped
 

@@ -14,7 +14,6 @@ YouTube to Podcast RSS Feed Converter - a Kotlin/Ktor web service that converts 
 ./gradlew ktlintCheck    # Check code style
 ./gradlew ktlintFormat   # Auto-fix code style issues
 ./gradlew detekt         # Run static analysis
-./gradlew run            # Run the application (port 8080)
 ```
 
 Run a single test:
@@ -22,14 +21,44 @@ Run a single test:
 ./gradlew test --tests "net.dinomite.ytpodcast.ApplicationTest.test root endpoint"
 ```
 
+## Running the Application
+
+The application requires configuration via `application.conf` with environment variable overrides:
+
+```bash
+# Development (uses default credentials from application.conf)
+AUTH_USERNAME=dev AUTH_PASSWORD=dev TEMP_DIR=/tmp/ytpodcast ./gradlew run
+
+# Production (with custom credentials)
+AUTH_USERNAME=myuser AUTH_PASSWORD=securepass TEMP_DIR=/var/ytpodcast ./gradlew run
+```
+
+**Required environment variables:**
+- `TEMP_DIR` - Directory for temporary files and cache (e.g., `/tmp/ytpodcast`)
+
+**Optional environment variables with defaults:**
+- `AUTH_USERNAME` - Basic auth username (default: "dev" from application.conf)
+- `AUTH_PASSWORD` - Basic auth password (default: "dev" from application.conf)
+- `BASE_URL` - Base URL for generating episode links (default: "" - uses request host)
+- `PORT` - Server port (default: 8080)
+- `CACHE_MAX_SIZE` - Maximum cache size (default: "5GB")
+- `CACHE_MAX_COUNT` - Maximum number of cached files (default: 100)
+
+The application will fail to start if auth credentials are blank.
+
 ## Architecture
 
 **Framework**: Ktor 3.4+ with embedded Netty server on port 8080
+
+**Application Entry Point**: Uses `EngineMain` to bootstrap the server, which loads configuration from `application.conf` (located in `src/main/resources/`). The main function delegates to `EngineMain.main(args)`, which then calls `Application.module()`.
+
+**Configuration**: Loaded from `application.conf` using HOCON format with environment variable substitution via `${?VAR_NAME}` syntax. Configuration is accessed via `environment.config` in the module function and parsed by `AppConfig.load()` and `CacheConfig()`.
 
 **Plugin-based configuration** (`Application.module()` in `Application.kt`):
 - `configureSerialization()` - Kotlinx JSON with lenient parsing
 - `configureMonitoring()` - Call logging, error handling via StatusPages
 - `configureHTTP()` - CORS, default headers
+- `configureAuthentication()` - HTTP Basic Auth setup
 - `configureRouting()` - Endpoint definitions
 
 **Source structure**:
@@ -69,11 +98,14 @@ Run a single test:
 
 **Test Structure**:
 - `ApplicationTest.kt` - Basic endpoint tests (/, /health, 404, error handling)
+- `ApplicationConfigTest.kt` - Tests for configuration loading from application.conf via EngineMain
 - `IntegrationTest.kt` - Full integration tests organized with `@Nested` classes by endpoint:
   - `GetShow` - Tests for `/show/{playlistId}` (success and 404 cases)
   - `GetEpisode` - Tests for `/episode/{videoId}.mp3` (success and 404 cases)
+  - `Authentication` - Tests for auth on protected endpoints
 - Unit tests for services (`RssFeedServiceTest`, `AudioServiceTest`, `YouTubeMetadataServiceTest`)
 - Unit tests for utilities (`UrlBuilderTest`, `YtDlpExecutorTest`)
+- Unit tests for config (`AppConfigTest`)
 - Model tests (`PlaylistMetadataTest`, `VideoMetadataTest`)
 
 **Test Infrastructure**:
