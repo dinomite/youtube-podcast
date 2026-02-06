@@ -1,6 +1,7 @@
 package net.dinomite.ytpodcast.testsupport
 
 import io.ktor.server.application.Application
+import kotlin.io.path.createTempDirectory
 import net.dinomite.ytpodcast.config.AppConfig
 import net.dinomite.ytpodcast.config.CacheConfig
 import net.dinomite.ytpodcast.plugins.configureAuthentication
@@ -14,10 +15,11 @@ import net.dinomite.ytpodcast.services.YouTubeMetadataService
 
 fun Application.testModuleWithStub(stubExecutor: StubYtDlpExecutor) {
     val tempDir = System.getProperty("java.io.tmpdir")
+    val cacheDir = createTempDirectory("ytpodcast-test-cache").toString()
     val appConfig = AppConfig(
         baseUrl = "https://test.example.com",
         tempDir = tempDir,
-        cacheDir = "$tempDir/test-cache",
+        cacheDir = cacheDir,
         authUsername = "testuser",
         authPassword = "testpass",
     )
