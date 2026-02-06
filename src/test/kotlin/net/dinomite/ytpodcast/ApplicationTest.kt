@@ -9,10 +9,14 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.testing.testApplication
 import net.dinomite.ytpodcast.config.AppConfig
+import net.dinomite.ytpodcast.config.CacheConfig
 import net.dinomite.ytpodcast.plugins.configureHTTP
 import net.dinomite.ytpodcast.plugins.configureMonitoring
 import net.dinomite.ytpodcast.plugins.configureRouting
 import net.dinomite.ytpodcast.plugins.configureSerialization
+import net.dinomite.ytpodcast.services.AudioService
+import net.dinomite.ytpodcast.services.CacheService
+import net.dinomite.ytpodcast.util.YtDlpExecutor
 import org.junit.jupiter.api.Test
 
 class ApplicationTest {
@@ -78,9 +82,19 @@ class ApplicationTest {
     }
 
     private fun Application.testModule() {
+        val appConfig = AppConfig()
+        val cacheConfig = CacheConfig(
+            maxSize = 0L,
+            maxCount = 0,
+            directory = appConfig.tempDir
+        )
+        val ytDlpExecutor = YtDlpExecutor()
+        val audioService = AudioService(ytDlpExecutor, cacheConfig.directory)
+        val cacheService = CacheService(audioService, cacheConfig)
+
         configureSerialization()
         configureMonitoring()
         configureHTTP()
-        configureRouting(AppConfig())
+        configureRouting(appConfig, cacheService)
     }
 }
