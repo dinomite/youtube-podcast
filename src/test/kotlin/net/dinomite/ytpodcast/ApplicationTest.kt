@@ -3,6 +3,7 @@ package net.dinomite.ytpodcast
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.ktor.client.request.basicAuth
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -10,6 +11,7 @@ import io.ktor.server.application.Application
 import io.ktor.server.testing.testApplication
 import net.dinomite.ytpodcast.config.AppConfig
 import net.dinomite.ytpodcast.config.CacheConfig
+import net.dinomite.ytpodcast.plugins.configureAuthentication
 import net.dinomite.ytpodcast.plugins.configureHTTP
 import net.dinomite.ytpodcast.plugins.configureMonitoring
 import net.dinomite.ytpodcast.plugins.configureRouting
@@ -62,7 +64,9 @@ class ApplicationTest {
             testModule()
         }
 
-        client.get("/show/invalid-playlist-id").apply {
+        client.get("/show/invalid-playlist-id") {
+            basicAuth("testuser", "testpass")
+        }.apply {
             // Will fail because yt-dlp can't find the playlist
             // Returns 404 if error contains "not found", otherwise 500
             status.value shouldBeGreaterThanOrEqual 400
@@ -75,7 +79,9 @@ class ApplicationTest {
             testModule()
         }
 
-        client.get("/episode/invalid-video-id.mp3").apply {
+        client.get("/episode/invalid-video-id.mp3") {
+            basicAuth("testuser", "testpass")
+        }.apply {
             // Will fail because yt-dlp can't find the video
             // Returns 404 if error contains "not found", otherwise 500
             status.value shouldBeGreaterThanOrEqual 400
@@ -105,6 +111,7 @@ class ApplicationTest {
         configureSerialization()
         configureMonitoring()
         configureHTTP()
+        configureAuthentication(appConfig)
         configureRouting(appConfig, youTubeMetadataService, cacheService)
     }
 }

@@ -5,12 +5,14 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
+import io.ktor.server.auth.authenticate
 import io.ktor.server.request.host
 import io.ktor.server.request.port
 import io.ktor.server.response.header
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondFile
 import io.ktor.server.response.respondText
+import io.ktor.server.routing.Route
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
@@ -42,8 +44,10 @@ fun Application.configureRouting(
             call.respond(HttpStatusCode.OK, mapOf("status" to "healthy"))
         }
 
-        handlers.registerShowRoute(this)
-        handlers.registerEpisodeRoute(this)
+        authenticate("podcast-auth") {
+            handlers.registerShowRoute(this)
+            handlers.registerEpisodeRoute(this)
+        }
     }
 }
 
@@ -57,8 +61,8 @@ private class RouteHandlers(
 ) {
     private val logger = LoggerFactory.getLogger("Routing")
 
-    fun registerShowRoute(routing: Routing) {
-        routing.get("/show/{playlistId}") {
+    fun registerShowRoute(route: Route) {
+        route.get("/show/{playlistId}") {
             val playlistId = call.parameters["playlistId"]
                 ?: return@get call.respond(
                     HttpStatusCode.BadRequest,
@@ -69,8 +73,8 @@ private class RouteHandlers(
         }
     }
 
-    fun registerEpisodeRoute(routing: Routing) {
-        routing.get("/episode/{videoId}.mp3") {
+    fun registerEpisodeRoute(route: Route) {
+        route.get("/episode/{videoId}.mp3") {
             val videoId = call.parameters["videoId"]
                 ?: return@get call.respond(
                     HttpStatusCode.BadRequest,

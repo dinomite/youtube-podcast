@@ -5,6 +5,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import net.dinomite.ytpodcast.config.AppConfig
 import net.dinomite.ytpodcast.config.CacheConfig
+import net.dinomite.ytpodcast.plugins.configureAuthentication
 import net.dinomite.ytpodcast.plugins.configureHTTP
 import net.dinomite.ytpodcast.plugins.configureMonitoring
 import net.dinomite.ytpodcast.plugins.configureRouting
@@ -37,5 +38,6 @@ fun Application.module() {
     configureSerialization()
     configureMonitoring()
     configureHTTP()
+    configureAuthentication(appConfig)
     configureRouting(appConfig, youTubeMetadataService, cacheService)
 }
