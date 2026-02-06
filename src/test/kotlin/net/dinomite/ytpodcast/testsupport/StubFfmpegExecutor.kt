@@ -12,7 +12,13 @@ import net.dinomite.ytpodcast.util.FfmpegExecutor
 class StubFfmpegExecutor : FfmpegExecutor() {
     override fun startConversion(inputFile: String): ConversionProcess = object : ConversionProcess {
         override val inputStream: InputStream = FileInputStream(File(inputFile))
-        override fun waitFor(timeoutMinutes: Long) {}
-        override fun destroy() {}
+
+        @Suppress("Detekt:EmptyFunctionBlock")
+        override fun waitFor(timeoutMinutes: Long) {
+        }
+
+        @Suppress("Detekt:EmptyFunctionBlock")
+        override fun destroy() {
+        }
     }
 }

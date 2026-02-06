@@ -36,6 +36,7 @@ class StreamingAudioService(
      * @param rawFile The raw audio file from [downloadRawAudio]
      * @param outputStream The stream to write MP3 data to (typically the HTTP response)
      */
+    @Suppress("Detekt:TooGenericExceptionCaught")
     fun streamConversion(videoId: String, rawFile: File, outputStream: OutputStream) {
         val cacheFile = File(cacheDir, "$videoId.mp3")
 
