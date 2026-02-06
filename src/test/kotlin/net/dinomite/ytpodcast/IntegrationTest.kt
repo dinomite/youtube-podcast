@@ -142,7 +142,9 @@ class IntegrationTest {
         val appConfig = AppConfig(
             baseUrl = "https://test.example.com",
             tempDir = tempDir,
-            cacheDir = "$tempDir/test-cache"
+            cacheDir = "$tempDir/test-cache",
+            authUsername = "testuser",
+            authPassword = "testpass",
         )
         val cacheConfig = CacheConfig(
             maxSize = 0L,

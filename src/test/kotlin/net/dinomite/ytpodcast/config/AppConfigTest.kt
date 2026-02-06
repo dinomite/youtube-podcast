@@ -3,46 +3,65 @@ package net.dinomite.ytpodcast.config
 import io.kotest.matchers.shouldBe
 import io.ktor.server.config.MapApplicationConfig
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class AppConfigTest {
     @Test
-    fun `AppConfig holds baseUrl`() {
-        val config = AppConfig(baseUrl = "http://example.com", tempDir = "/tmp")
-
-        config.baseUrl shouldBe "http://example.com"
-    }
-
-    @Test
-    fun `AppConfig holds tempDir`() {
-        val config = AppConfig(baseUrl = "", tempDir = "/custom/temp")
-
-        config.tempDir shouldBe "/custom/temp"
-    }
-
-    @Test
-    fun `AppConfig allows empty tempDir`() {
-        val config = AppConfig(baseUrl = "", tempDir = "")
-
-        config.tempDir shouldBe ""
-    }
-
-    @Test
-    fun `loads tempDir from config`() {
+    fun `load reads auth credentials from config`() {
         val config = MapApplicationConfig().apply {
-            put("ytpodcast.tempDir", "/app/audio-cache")
+            put("ytpodcast.auth.username", "testuser")
+            put("ytpodcast.auth.password", "testpass")
         }
 
         val appConfig = AppConfig.load(config)
 
-        appConfig.tempDir shouldBe "/app/audio-cache"
+        appConfig.authUsername shouldBe "testuser"
+        appConfig.authPassword shouldBe "testpass"
     }
 
     @Test
-    fun `defaults tempDir to system temp when not in config`() {
-        val config = MapApplicationConfig()
+    fun `load throws exception when username is missing`() {
+        val config = MapApplicationConfig().apply {
+            put("ytpodcast.auth.password", "testpass")
+        }
 
-        val appConfig = AppConfig.load(config)
+        assertThrows<IllegalStateException> {
+            AppConfig.load(config)
+        }
+    }
 
-        appConfig.tempDir shouldBe "${System.getProperty("java.io.tmpdir")}/tmp"
+    @Test
+    fun `load throws exception when password is missing`() {
+        val config = MapApplicationConfig().apply {
+            put("ytpodcast.auth.username", "testuser")
+        }
+
+        assertThrows<IllegalStateException> {
+            AppConfig.load(config)
+        }
+    }
+
+    @Test
+    fun `load throws exception when username is empty`() {
+        val config = MapApplicationConfig().apply {
+            put("ytpodcast.auth.username", "")
+            put("ytpodcast.auth.password", "testpass")
+        }
+
+        assertThrows<IllegalStateException> {
+            AppConfig.load(config)
+        }
+    }
+
+    @Test
+    fun `load throws exception when password is empty`() {
+        val config = MapApplicationConfig().apply {
+            put("ytpodcast.auth.username", "testuser")
+            put("ytpodcast.auth.password", "")
+        }
+
+        assertThrows<IllegalStateException> {
+            AppConfig.load(config)
+        }
     }
 }

@@ -87,7 +87,9 @@ class ApplicationTest {
         val appConfig = AppConfig(
             baseUrl = "",
             tempDir = tempDir,
-            cacheDir = "$tempDir/test-cache"
+            cacheDir = "$tempDir/test-cache",
+            authUsername = "testuser",
+            authPassword = "testpass",
         )
         val cacheConfig = CacheConfig(
             maxSize = 0L,
