@@ -26,6 +26,8 @@ dependencies {
     implementation(libs.ktor.server.callLogging)
     implementation(libs.ktor.server.defaultHeaders)
     implementation(libs.ktor.server.cors)
+    implementation(libs.ktor.server.auth)
+    implementation(libs.ktor.server.auth.jvm)
 
     // Logging
     implementation(libs.klogging)
