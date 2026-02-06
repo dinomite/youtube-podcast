@@ -1,7 +1,6 @@
 package net.dinomite.ytpodcast
 
 import io.ktor.server.application.Application
-import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import net.dinomite.ytpodcast.config.AppConfig
@@ -13,7 +12,6 @@ import net.dinomite.ytpodcast.plugins.configureSerialization
 import net.dinomite.ytpodcast.services.AudioService
 import net.dinomite.ytpodcast.services.CacheService
 import net.dinomite.ytpodcast.util.YtDlpExecutor
-import net.dinomite.ytpodcast.util.parseSize
 
 fun main() {
     embeddedServer(
@@ -25,8 +23,8 @@ fun main() {
 }
 
 fun Application.module() {
-    val appConfig = loadAppConfig(environment.config)
-    val cacheConfig = loadCacheConfig(environment.config, appConfig.tempDir)
+    val appConfig = AppConfig(environment.config)
+    val cacheConfig = CacheConfig(environment.config, appConfig.tempDir)
 
     val ytDlpExecutor = YtDlpExecutor()
     val audioService = AudioService(ytDlpExecutor, cacheConfig.directory)
@@ -38,18 +36,4 @@ fun Application.module() {
     configureMonitoring()
     configureHTTP()
     configureRouting(appConfig, cacheService)
-}
-
-fun loadAppConfig(config: ApplicationConfig): AppConfig = AppConfig(
-    baseUrl = config.propertyOrNull("ytpodcast.baseUrl")?.getString() ?: "",
-    tempDir = config.propertyOrNull("ytpodcast.tempDir")?.getString() ?: System.getProperty("java.io.tmpdir"),
-)
-
-fun loadCacheConfig(config: ApplicationConfig, tempDir: String): CacheConfig {
-    val sizeStr = config.propertyOrNull("ytpodcast.cache.maxSize")?.getString() ?: "5GB"
-    val maxSize = parseSize(sizeStr)
-
-    val maxCount = config.propertyOrNull("ytpodcast.cache.maxCount")?.getString()?.toInt() ?: 100
-
-    return CacheConfig(maxSize, maxCount, tempDir)
 }
