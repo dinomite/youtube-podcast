@@ -15,15 +15,12 @@ import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import net.dinomite.ytpodcast.config.AppConfig
-import net.dinomite.ytpodcast.config.CacheConfig
 import net.dinomite.ytpodcast.models.ErrorResponse
-import net.dinomite.ytpodcast.services.AudioService
 import net.dinomite.ytpodcast.services.CacheService
 import net.dinomite.ytpodcast.services.RssFeedService
 import net.dinomite.ytpodcast.services.YouTubeMetadataService
 import net.dinomite.ytpodcast.util.UrlBuilder
 import net.dinomite.ytpodcast.util.YtDlpException
-import net.dinomite.ytpodcast.util.YtDlpExecutor
 import org.slf4j.LoggerFactory
 
 fun Application.configureRouting(
@@ -33,40 +30,6 @@ fun Application.configureRouting(
 ) {
     val urlBuilder = UrlBuilder(appConfig.baseUrl)
     val rssFeedService = RssFeedService(urlBuilder)
-
-    val handlers = RouteHandlers(youTubeMetadataService, rssFeedService, cacheService)
-
-    routing {
-        get("/") {
-            call.respondText("YouTube to Podcast RSS Feed Converter")
-        }
-
-        get("/health") {
-            call.respond(HttpStatusCode.OK, mapOf("status" to "healthy"))
-        }
-
-        handlers.registerShowRoute(this)
-        handlers.registerEpisodeRoute(this)
-    }
-}
-
-// Test overload that accepts only AppConfig (for ApplicationTest)
-fun Application.configureRouting(appConfig: AppConfig) {
-    configureRouting(appConfig, YtDlpExecutor())
-}
-
-// Test overload that accepts a YtDlpExecutor for dependency injection
-fun Application.configureRouting(
-    appConfig: AppConfig,
-    ytDlpExecutor: YtDlpExecutor,
-) {
-    val youTubeMetadataService = YouTubeMetadataService(ytDlpExecutor)
-    val urlBuilder = UrlBuilder(appConfig.baseUrl)
-    val rssFeedService = RssFeedService(urlBuilder)
-    val cacheService = CacheService(
-        AudioService(ytDlpExecutor, appConfig.tempDir),
-        CacheConfig(maxSize = 0, maxCount = 0, directory = appConfig.tempDir),
-    )
 
     val handlers = RouteHandlers(youTubeMetadataService, rssFeedService, cacheService)
 
