@@ -24,12 +24,12 @@ fun main() {
 }
 
 fun Application.module() {
-    val appConfig = AppConfig(environment.config)
-    val cacheConfig = CacheConfig(environment.config, appConfig.tempDir)
+    val appConfig = AppConfig.load(environment.config)
+    val cacheConfig = CacheConfig(environment.config, appConfig.cacheDir)
 
     val ytDlpExecutor = YtDlpExecutor()
     val youTubeMetadataService = YouTubeMetadataService(ytDlpExecutor)
-    val audioService = AudioService(ytDlpExecutor, cacheConfig.directory)
+    val audioService = AudioService(ytDlpExecutor, appConfig.tempDir)
     val cacheService = CacheService(audioService, cacheConfig)
 
     cacheService.initialize()

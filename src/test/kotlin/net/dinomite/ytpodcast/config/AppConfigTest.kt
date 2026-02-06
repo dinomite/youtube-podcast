@@ -32,7 +32,7 @@ class AppConfigTest {
             put("ytpodcast.tempDir", "/app/audio-cache")
         }
 
-        val appConfig = AppConfig(config)
+        val appConfig = AppConfig.load(config)
 
         appConfig.tempDir shouldBe "/app/audio-cache"
     }
@@ -41,8 +41,8 @@ class AppConfigTest {
     fun `defaults tempDir to system temp when not in config`() {
         val config = MapApplicationConfig()
 
-        val appConfig = AppConfig(config)
+        val appConfig = AppConfig.load(config)
 
-        appConfig.tempDir shouldBe System.getProperty("java.io.tmpdir")
+        appConfig.tempDir shouldBe "${System.getProperty("java.io.tmpdir")}/tmp"
     }
 }

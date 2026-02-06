@@ -138,17 +138,19 @@ class IntegrationTest {
     }
 
     private fun Application.testModuleWithStub(stubExecutor: StubYtDlpExecutor) {
+        val tempDir = System.getProperty("java.io.tmpdir")
         val appConfig = AppConfig(
             baseUrl = "https://test.example.com",
-            tempDir = System.getProperty("java.io.tmpdir")
+            tempDir = tempDir,
+            cacheDir = "$tempDir/test-cache"
         )
         val cacheConfig = CacheConfig(
             maxSize = 0L,
             maxCount = 0,
-            directory = appConfig.tempDir
+            directory = appConfig.cacheDir
         )
         val youTubeMetadataService = YouTubeMetadataService(stubExecutor)
-        val audioService = AudioService(stubExecutor, cacheConfig.directory)
+        val audioService = AudioService(stubExecutor, appConfig.tempDir)
         val cacheService = CacheService(audioService, cacheConfig)
         cacheService.initialize()
 

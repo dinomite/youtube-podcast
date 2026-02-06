@@ -37,14 +37,22 @@ class CacheServiceTest {
         val videoId = "test123"
         // AudioService downloads to a different temp directory, not the cache
         val audioServiceTempDir = createTempDirectory("audio-temp").toFile()
-        val expectedFile = File(audioServiceTempDir, "$videoId.mp3")
-        expectedFile.writeText("audio content")
+        val tempFile = File(audioServiceTempDir, "$videoId.mp3")
+        tempFile.writeText("audio content")
 
-        every { mockAudioService.downloadToTempFile(videoId) } returns expectedFile
+        every { mockAudioService.downloadToTempFile(videoId) } returns tempFile
 
         val result = cacheService.getAudioFile(videoId)
 
-        result shouldBe expectedFile
+        // File should be moved to cache directory
+        val expectedCacheFile = File(tempDir, "$videoId.mp3")
+        result shouldBe expectedCacheFile
+        result.exists() shouldBe true
+        result.readText() shouldBe "audio content"
+
+        // Original temp file should no longer exist (was moved)
+        tempFile.exists() shouldBe false
+
         verify(exactly = 1) { mockAudioService.downloadToTempFile(videoId) }
 
         // Cleanup
@@ -97,9 +105,10 @@ class CacheServiceTest {
         Thread.sleep(10)
         file3.setLastModified(System.currentTimeMillis() - 1000)
 
-        // Mock download to trigger eviction
+        // Mock download to trigger eviction - downloads to temp, not cache
+        val audioTempDir = createTempDirectory("audio-temp").toFile()
         every { mockAudioService.downloadToTempFile("video4") } answers {
-            File(tempDir, "video4.mp3").apply { writeText("content4") }
+            File(audioTempDir, "video4.mp3").apply { writeText("content4") }
         }
 
         cacheService.getAudioFile("video4")
@@ -136,9 +145,10 @@ class CacheServiceTest {
             setLastModified(System.currentTimeMillis() - 1000)
         }
 
-        // Mock download
+        // Mock download - downloads to temp, not cache
+        val audioTempDir = createTempDirectory("audio-temp").toFile()
         every { mockAudioService.downloadToTempFile("video4") } answers {
-            File(tempDir, "video4.mp3").apply { writeText("small") }
+            File(audioTempDir, "video4.mp3").apply { writeText("small") }
         }
 
         cacheService.getAudioFile("video4")

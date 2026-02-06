@@ -83,18 +83,20 @@ class ApplicationTest {
     }
 
     private fun Application.testModule() {
+        val tempDir = System.getProperty("java.io.tmpdir")
         val appConfig = AppConfig(
             baseUrl = "",
-            tempDir = System.getProperty("java.io.tmpdir")
+            tempDir = tempDir,
+            cacheDir = "$tempDir/test-cache"
         )
         val cacheConfig = CacheConfig(
             maxSize = 0L,
             maxCount = 0,
-            directory = appConfig.tempDir
+            directory = appConfig.cacheDir
         )
         val ytDlpExecutor = YtDlpExecutor()
         val youTubeMetadataService = YouTubeMetadataService(ytDlpExecutor)
-        val audioService = AudioService(ytDlpExecutor, cacheConfig.directory)
+        val audioService = AudioService(ytDlpExecutor, appConfig.tempDir)
         val cacheService = CacheService(audioService, cacheConfig)
         cacheService.initialize()
 
