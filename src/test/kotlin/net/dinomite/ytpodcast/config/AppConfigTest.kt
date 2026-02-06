@@ -25,7 +25,7 @@ class AppConfigTest {
             put("ytpodcast.auth.password", "testpass")
         }
 
-        assertThrows<IllegalStateException> {
+        assertThrows<IllegalArgumentException> {
             AppConfig.load(config)
         }
     }
@@ -36,7 +36,7 @@ class AppConfigTest {
             put("ytpodcast.auth.username", "testuser")
         }
 
-        assertThrows<IllegalStateException> {
+        assertThrows<IllegalArgumentException> {
             AppConfig.load(config)
         }
     }
@@ -48,7 +48,7 @@ class AppConfigTest {
             put("ytpodcast.auth.password", "testpass")
         }
 
-        assertThrows<IllegalStateException> {
+        assertThrows<IllegalArgumentException> {
             AppConfig.load(config)
         }
     }
@@ -60,7 +60,7 @@ class AppConfigTest {
             put("ytpodcast.auth.password", "")
         }
 
-        assertThrows<IllegalStateException> {
+        assertThrows<IllegalArgumentException> {
             AppConfig.load(config)
         }
     }

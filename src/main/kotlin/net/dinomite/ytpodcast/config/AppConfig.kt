@@ -19,8 +19,8 @@ data class AppConfig(
             val authUsername = config.propertyOrNull("ytpodcast.auth.username")?.getString() ?: ""
             val authPassword = config.propertyOrNull("ytpodcast.auth.password")?.getString() ?: ""
 
-            check(authUsername.isNotBlank()) { "ytpodcast.auth.username must be configured" }
-            check(authPassword.isNotBlank()) { "ytpodcast.auth.password must be configured" }
+            require(authUsername.isNotBlank()) { "ytpodcast.auth.username must be configured" }
+            require(authPassword.isNotBlank()) { "ytpodcast.auth.password must be configured" }
 
             return AppConfig(
                 baseUrl = baseUrl,
