@@ -54,6 +54,25 @@ class CacheService(private val audioService: AudioService, private val config: C
     }
 
     /**
+     * Returns the cached audio file if it exists, or null if not cached.
+     *
+     * Updates the file's access time on hit for LRU tracking.
+     *
+     * @param videoId The YouTube video ID
+     * @return The cached file, or null if not in cache
+     */
+    fun getCachedFile(videoId: String): File? {
+        val cacheFile = File(config.directory, "$videoId.mp3")
+        return if (cacheFile.exists()) {
+            logger.info("Cache HIT: videoId=$videoId")
+            touchFile(cacheFile)
+            cacheFile
+        } else {
+            null
+        }
+    }
+
+    /**
      * Initializes the cache by scanning the directory and enforcing limits.
      *
      * Should be called once at application startup before serving requests.
@@ -114,7 +133,7 @@ class CacheService(private val audioService: AudioService, private val config: C
         else -> "$bytes B"
     }
 
-    private fun evictIfNeeded() {
+    fun evictIfNeeded() {
         val files = listCacheFiles()
         val totalSize = files.sumOf { it.length() }
         val totalCount = files.size

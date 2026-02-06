@@ -216,6 +216,25 @@ class CacheServiceTest {
     }
 
     @Test
+    fun `getCachedFile returns file when it exists in cache`() {
+        val videoId = "cached456"
+        val cachedFile = File(tempDir, "$videoId.mp3")
+        cachedFile.writeText("cached content")
+
+        val result = cacheService.getCachedFile(videoId)
+
+        result shouldBe cachedFile
+        result!!.readText() shouldBe "cached content"
+    }
+
+    @Test
+    fun `getCachedFile returns null when file not in cache`() {
+        val result = cacheService.getCachedFile("nonexistent")
+
+        result shouldBe null
+    }
+
+    @Test
     fun `unlimited count disables count limit`() {
         val config = CacheConfig(
             maxSize = 100L, // 100 bytes
