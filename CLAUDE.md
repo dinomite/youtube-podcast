@@ -46,7 +46,7 @@ Run a single test:
 - `GET /episode/{videoId}.mp3` - Audio file for episode (content-type: audio/mpeg)
 
 **Routing Architecture**:
-- Two `configureRouting()` overloads: one using real YtDlpExecutor, one accepting injected executor for testing
+- Single `configureRouting()` function accepting AppConfig, YouTubeMetadataService, and CacheService
 - `RouteHandlers` private class encapsulating endpoint logic
 - Sophisticated error handling via `YtDlpErrorConfig` - maps yt-dlp errors to HTTP status codes
 - Returns 404 for "not found" errors, 500 for other failures
@@ -74,7 +74,7 @@ Run a single test:
   - `givenPlaylist(id, metadata)` - Configures stub responses for playlist fetches
   - `givenAudio(videoId, content)` - Configures stub responses for audio downloads
   - Throws `YtDlpException` for unconfigured requests
-- Uses Ktor's `testApplication` with dependency injection via `configureRouting()` overload
+- Uses Ktor's `testApplication` with dependency injection via test helper functions (`testModule()`, `testModuleWithStub()`)
 - kotest matchers (`shouldBe`, `shouldContain`) for assertions
 - JUnit 5 with `@Nested` classes for test organization
 
