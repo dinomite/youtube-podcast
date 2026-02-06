@@ -59,7 +59,7 @@ private class RouteHandlers(
     private val rssFeedService: RssFeedService,
     private val cacheService: CacheService,
 ) {
-    private val logger = LoggerFactory.getLogger("Routing")
+    private val logger = LoggerFactory.getLogger(Routing::class.java.name)
 
     fun registerShowRoute(route: Route) {
         route.get("/show/{playlistId}") {

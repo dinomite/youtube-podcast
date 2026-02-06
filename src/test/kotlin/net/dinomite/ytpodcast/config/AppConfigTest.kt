@@ -64,4 +64,43 @@ class AppConfigTest {
             AppConfig.load(config)
         }
     }
+
+    @Test
+    fun `tempDir defaults when config value is empty string`() {
+        val config = MapApplicationConfig().apply {
+            put("ytpodcast.tempDir", "")
+            put("ytpodcast.auth.username", "testuser")
+            put("ytpodcast.auth.password", "testpass")
+        }
+
+        val appConfig = AppConfig.load(config)
+
+        appConfig.tempDir shouldBe "${System.getProperty("java.io.tmpdir")}/tmp"
+    }
+
+    @Test
+    fun `cacheDir defaults to tempDir-based path when config value is empty`() {
+        val config = MapApplicationConfig().apply {
+            put("ytpodcast.tempDir", "/custom/tmp")
+            put("ytpodcast.auth.username", "testuser")
+            put("ytpodcast.auth.password", "testpass")
+        }
+
+        val appConfig = AppConfig.load(config)
+
+        appConfig.cacheDir shouldBe "/custom/tmp/cache"
+    }
+
+    @Test
+    fun `tempDir uses configured value when present`() {
+        val config = MapApplicationConfig().apply {
+            put("ytpodcast.tempDir", "/custom/tmp")
+            put("ytpodcast.auth.username", "testuser")
+            put("ytpodcast.auth.password", "testpass")
+        }
+
+        val appConfig = AppConfig.load(config)
+
+        appConfig.tempDir shouldBe "/custom/tmp"
+    }
 }

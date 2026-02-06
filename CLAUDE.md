@@ -67,7 +67,7 @@ The application will fail to start if auth credentials are blank.
 - `models/` - Data classes (ErrorResponse, PlaylistMetadata, VideoMetadata)
 - `services/` - Business logic services (RssFeedService, AudioService, CacheService, YouTubeMetadataService)
 - `util/` - Utilities (YtDlpExecutor, UrlBuilder, SizeParser, YtDlpException)
-- `config/` - Application configuration (AppConfig: baseUrl, tempDir; CacheConfig: maxSize, maxCount, directory)
+- `config/` - Application configuration (AppConfig: baseUrl, baseDir; CacheConfig: maxSize, maxCount, directory)
 
 **API Routes** (defined in `plugins/Routing.kt`):
 - `GET /` - Root endpoint

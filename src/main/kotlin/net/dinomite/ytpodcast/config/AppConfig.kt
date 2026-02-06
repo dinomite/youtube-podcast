@@ -11,28 +11,28 @@ data class AppConfig(
     val authPassword: String,
 ) {
     companion object {
-        private val logger = LoggerFactory.getLogger("AppConfig")
+        private val logger = LoggerFactory.getLogger(AppConfig::class.java.name)
 
         fun load(config: ApplicationConfig): AppConfig {
-            val baseUrl = config.propertyOrNull("ytpodcast.baseUrl")?.getString() ?: ""
-            val tempDir = config.propertyOrNull("ytpodcast.tempDir")?.getString()
-                ?: "${System.getProperty("java.io.tmpdir")}/tmp"
-            val cacheDir = config.propertyOrNull("ytpodcast.cacheDir")?.getString() ?: "$tempDir/cache"
+            val baseUrl = config.getStringOrNull("ytpodcast.baseUrl") ?: ""
+            val baseDir = config.getStringOrNull("ytpodcast.baseDir") ?: createBaseDir()
 
             val authUsername = config.propertyOrNull("ytpodcast.auth.username")?.getString() ?: ""
             val authPassword = config.propertyOrNull("ytpodcast.auth.password")?.getString() ?: ""
 
             require(authUsername.isNotBlank()) { "ytpodcast.auth.username must be configured" }
             require(authPassword.isNotBlank()) { "ytpodcast.auth.password must be configured" }
-            logger.info("Username $authUsername, Password $authPassword")
+            logger.info("Credentials: $authUsername:$authPassword")
 
             return AppConfig(
                 baseUrl = baseUrl,
-                tempDir = tempDir,
-                cacheDir = cacheDir,
+                tempDir = "$baseDir/tmp",
+                cacheDir = "$baseDir/cache",
                 authUsername = authUsername,
                 authPassword = authPassword,
             )
         }
+
+        private fun createBaseDir(): String = "${System.getProperty("java.io.tmpdir")}/ytpodcast"
     }
 }
