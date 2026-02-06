@@ -40,7 +40,17 @@ class CacheService(private val audioService: AudioService, private val config: C
         logger.info("Downloading: videoId=$videoId")
         val downloadedFile = audioService.downloadToTempFile(videoId)
         logger.info("Download complete: videoId=$videoId, size=${formatSize(downloadedFile.length())}")
-        return downloadedFile
+
+        // Move from temp to cache directory
+        val moved = downloadedFile.renameTo(cacheFile)
+        return if (moved) {
+            logger.info("Cached: videoId=$videoId")
+            cacheFile
+        } else {
+            logger.warn("Failed to move file (${downloadedFile.absolutePath}) to cache dir (${cacheFile.absolutePath})")
+            // Fallback: serve from temp
+            downloadedFile
+        }
     }
 
     /**
