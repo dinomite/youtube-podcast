@@ -1,5 +1,6 @@
 package net.dinomite.ytpodcast
 
+import com.typesafe.config.ConfigFactory
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -8,7 +9,9 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
+import io.ktor.server.config.HoconApplicationConfig
 import io.ktor.server.testing.testApplication
+import java.io.InputStreamReader
 import net.dinomite.ytpodcast.config.AppConfig
 import net.dinomite.ytpodcast.config.CacheConfig
 import net.dinomite.ytpodcast.plugins.configureAuthentication
@@ -85,6 +88,29 @@ class ApplicationTest {
             // Will fail because yt-dlp can't find the video
             // Returns 404 if error contains "not found", otherwise 500
             status.value shouldBeGreaterThanOrEqual 400
+        }
+    }
+
+    @Test
+    fun `module loads with config from file`() = testApplication {
+        environment {
+            config = HoconApplicationConfig(
+                ConfigFactory.parseReader(
+                    InputStreamReader(
+                        javaClass.classLoader.getResourceAsStream("test-application-minimal.conf")
+                            ?: error("test-application-minimal.conf not found")
+                    )
+                )
+            )
+        }
+
+        application {
+            module()
+        }
+
+        client.get("/").apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe "YouTube to Podcast RSS Feed Converter"
         }
     }
 

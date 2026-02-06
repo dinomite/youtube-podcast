@@ -1,8 +1,7 @@
 package net.dinomite.ytpodcast
 
 import io.ktor.server.application.Application
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
+import io.ktor.server.netty.EngineMain
 import net.dinomite.ytpodcast.config.AppConfig
 import net.dinomite.ytpodcast.config.CacheConfig
 import net.dinomite.ytpodcast.plugins.configureAuthentication
@@ -15,13 +14,8 @@ import net.dinomite.ytpodcast.services.CacheService
 import net.dinomite.ytpodcast.services.YouTubeMetadataService
 import net.dinomite.ytpodcast.util.YtDlpExecutor
 
-fun main() {
-    embeddedServer(
-        Netty,
-        port = 8080,
-        host = "0.0.0.0",
-        module = Application::module,
-    ).start(wait = true)
+fun main(args: Array<String>) {
+    EngineMain.main(args)
 }
 
 fun Application.module() {
