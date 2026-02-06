@@ -18,16 +18,25 @@ class StreamingAudioService(
     private val logger = LoggerFactory.getLogger(StreamingAudioService::class.java)
 
     /**
-     * Downloads raw audio, converts to MP3, and streams to [outputStream].
-     *
-     * The converted MP3 is also written to the cache directory. On success,
-     * the raw audio file is deleted. On failure, partial cache files are cleaned up.
+     * Downloads raw audio for a video. Call this before [streamConversion] so that
+     * download errors (e.g. video not found) can be handled before starting the HTTP response.
      *
      * @param videoId The YouTube video ID
+     * @return The raw audio file
+     */
+    fun downloadRawAudio(videoId: String): File = audioService.downloadToTempFile(videoId)
+
+    /**
+     * Converts a raw audio file to MP3 and streams to [outputStream] while caching to disk.
+     *
+     * On success the raw file is deleted and the cache file is kept.
+     * On failure the cache file is deleted.
+     *
+     * @param videoId The YouTube video ID (used for cache file naming)
+     * @param rawFile The raw audio file from [downloadRawAudio]
      * @param outputStream The stream to write MP3 data to (typically the HTTP response)
      */
-    fun streamConvertedAudio(videoId: String, outputStream: OutputStream) {
-        val rawFile = audioService.downloadToTempFile(videoId)
+    fun streamConversion(videoId: String, rawFile: File, outputStream: OutputStream) {
         val cacheFile = File(cacheDir, "$videoId.mp3")
 
         logger.info("Starting streaming conversion: videoId=$videoId, rawFile=${rawFile.name}")
@@ -53,5 +62,17 @@ class StreamingAudioService(
         } finally {
             rawFile.delete()
         }
+    }
+
+    /**
+     * Convenience method that downloads raw audio and streams conversion.
+     * Note: errors during download will propagate before any output is written.
+     *
+     * @param videoId The YouTube video ID
+     * @param outputStream The stream to write MP3 data to
+     */
+    fun streamConvertedAudio(videoId: String, outputStream: OutputStream) {
+        val rawFile = downloadRawAudio(videoId)
+        streamConversion(videoId, rawFile, outputStream)
     }
 }
