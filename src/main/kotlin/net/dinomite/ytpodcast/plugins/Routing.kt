@@ -28,9 +28,9 @@ import org.slf4j.LoggerFactory
 
 fun Application.configureRouting(
     appConfig: AppConfig,
+    youTubeMetadataService: YouTubeMetadataService,
     cacheService: CacheService,
 ) {
-    val youTubeMetadataService = YouTubeMetadataService(YtDlpExecutor())
     val urlBuilder = UrlBuilder(appConfig.baseUrl)
     val rssFeedService = RssFeedService(urlBuilder)
 
