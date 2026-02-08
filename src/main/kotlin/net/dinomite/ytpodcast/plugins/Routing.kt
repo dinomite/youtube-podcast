@@ -11,6 +11,7 @@ import io.ktor.server.request.port
 import io.ktor.server.response.header
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondFile
+import io.ktor.server.response.respondOutputStream
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.Routing
@@ -20,7 +21,9 @@ import net.dinomite.ytpodcast.config.AppConfig
 import net.dinomite.ytpodcast.models.ErrorResponse
 import net.dinomite.ytpodcast.services.CacheService
 import net.dinomite.ytpodcast.services.RssFeedService
+import net.dinomite.ytpodcast.services.StreamingAudioService
 import net.dinomite.ytpodcast.services.YouTubeMetadataService
+import net.dinomite.ytpodcast.util.FfmpegException
 import net.dinomite.ytpodcast.util.UrlBuilder
 import net.dinomite.ytpodcast.util.YtDlpException
 import org.slf4j.LoggerFactory
@@ -29,11 +32,12 @@ fun Application.configureRouting(
     appConfig: AppConfig,
     youTubeMetadataService: YouTubeMetadataService,
     cacheService: CacheService,
+    streamingAudioService: StreamingAudioService,
 ) {
     val urlBuilder = UrlBuilder(appConfig.baseUrl)
     val rssFeedService = RssFeedService(urlBuilder)
 
-    val handlers = RouteHandlers(youTubeMetadataService, rssFeedService, cacheService)
+    val handlers = RouteHandlers(youTubeMetadataService, rssFeedService, cacheService, streamingAudioService)
 
     routing {
         get("/") {
@@ -58,6 +62,7 @@ private class RouteHandlers(
     private val youTubeMetadataService: YouTubeMetadataService,
     private val rssFeedService: RssFeedService,
     private val cacheService: CacheService,
+    private val streamingAudioService: StreamingAudioService,
 ) {
     private val logger = LoggerFactory.getLogger(Routing::class.java.name)
 
@@ -108,9 +113,23 @@ private class RouteHandlers(
 
     private suspend fun handleEpisodeRequest(call: ApplicationCall, videoId: String) {
         try {
-            val audioFile = cacheService.getAudioFile(videoId)
+            // Check cache first
+            val cachedFile = cacheService.getCachedFile(videoId)
+            if (cachedFile != null) {
+                call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"$videoId.mp3\"")
+                call.respondFile(cachedFile)
+                return
+            }
+
+            // Cache miss: download raw audio first (errors here get proper HTTP status)
+            cacheService.evictIfNeeded()
+            val rawFile = streamingAudioService.downloadRawAudio(videoId)
+
+            // Stream conversion to client (HTTP 200 sent at this point)
             call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"$videoId.mp3\"")
-            call.respondFile(audioFile)
+            call.respondOutputStream(contentType = ContentType.Audio.MPEG) {
+                streamingAudioService.streamConversion(videoId, rawFile, this)
+            }
         } catch (e: YtDlpException) {
             logger.error("Failed to download episode $videoId", e)
             respondToYtDlpError(
@@ -123,6 +142,12 @@ private class RouteHandlers(
                     errorPrefix = "Failed to download episode",
                     additionalNotFoundKeywords = listOf("private"),
                 ),
+            )
+        } catch (e: FfmpegException) {
+            logger.error("Failed to convert episode $videoId", e)
+            call.respond(
+                HttpStatusCode.InternalServerError,
+                ErrorResponse("conversion_error", "Failed to convert episode: ${e.message}"),
             )
         }
     }

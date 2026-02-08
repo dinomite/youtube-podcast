@@ -11,7 +11,9 @@ import net.dinomite.ytpodcast.plugins.configureRouting
 import net.dinomite.ytpodcast.plugins.configureSerialization
 import net.dinomite.ytpodcast.services.AudioService
 import net.dinomite.ytpodcast.services.CacheService
+import net.dinomite.ytpodcast.services.StreamingAudioService
 import net.dinomite.ytpodcast.services.YouTubeMetadataService
+import net.dinomite.ytpodcast.util.FfmpegExecutor
 import net.dinomite.ytpodcast.util.YtDlpExecutor
 
 fun main(args: Array<String>) {
@@ -23,9 +25,11 @@ fun Application.module() {
     val cacheConfig = CacheConfig(environment.config, appConfig.cacheDir)
 
     val ytDlpExecutor = YtDlpExecutor()
+    val ffmpegExecutor = FfmpegExecutor()
     val youTubeMetadataService = YouTubeMetadataService(ytDlpExecutor)
     val audioService = AudioService(ytDlpExecutor, appConfig.tempDir)
-    val cacheService = CacheService(audioService, cacheConfig)
+    val cacheService = CacheService(cacheConfig)
+    val streamingAudioService = StreamingAudioService(audioService, ffmpegExecutor, cacheConfig.directory)
 
     cacheService.initialize()
 
@@ -33,5 +37,5 @@ fun Application.module() {
     configureMonitoring()
     configureHTTP()
     configureAuthentication(appConfig)
-    configureRouting(appConfig, youTubeMetadataService, cacheService)
+    configureRouting(appConfig, youTubeMetadataService, cacheService, streamingAudioService)
 }
