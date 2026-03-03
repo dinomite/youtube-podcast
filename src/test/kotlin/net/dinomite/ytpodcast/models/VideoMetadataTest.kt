@@ -1,6 +1,7 @@
 package net.dinomite.ytpodcast.models
 
 import io.kotest.matchers.shouldBe
+import net.dinomite.ytpodcast.models.Thumbnail
 import net.dinomite.ytpodcast.util.YtDlpExecutor
 import org.junit.jupiter.api.Test
 
@@ -50,5 +51,34 @@ class VideoMetadataTest {
         video.duration shouldBe null
         video.uploadDate shouldBe null
         video.uploader shouldBe null
+    }
+
+    @Test
+    fun `bestThumbnail returns highest resolution thumbnail URL`() {
+        val video = VideoMetadata(
+            id = "test",
+            title = "Test",
+            thumbnails = listOf(
+                Thumbnail(url = "https://example.com/small.jpg", width = 168, height = 94),
+                Thumbnail(url = "https://example.com/large.jpg", width = 336, height = 188),
+                Thumbnail(url = "https://example.com/medium.jpg", width = 246, height = 138),
+            ),
+        )
+
+        video.bestThumbnail shouldBe "https://example.com/large.jpg"
+    }
+
+    @Test
+    fun `bestThumbnail falls back to thumbnail field when thumbnails is empty`() {
+        val video = VideoMetadata(id = "test", title = "Test", thumbnail = "https://example.com/fallback.jpg")
+
+        video.bestThumbnail shouldBe "https://example.com/fallback.jpg"
+    }
+
+    @Test
+    fun `bestThumbnail returns null when both thumbnails and thumbnail are absent`() {
+        val video = VideoMetadata(id = "test", title = "Test")
+
+        video.bestThumbnail shouldBe null
     }
 }
