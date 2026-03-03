@@ -1,7 +1,6 @@
 package net.dinomite.ytpodcast.models
 
 import io.kotest.matchers.shouldBe
-import net.dinomite.ytpodcast.models.Thumbnail
 import net.dinomite.ytpodcast.util.YtDlpExecutor
 import org.junit.jupiter.api.Test
 
