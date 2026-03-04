@@ -13,41 +13,48 @@ class YtDlpExecutorTest {
     inner class ParsePlaylistJson {
         @Test
         fun `parsePlaylistJson throws on invalid JSON`() {
-            val invalidJson = "not valid json"
-
             val exception = shouldThrow<YtDlpException> {
-                YtDlpExecutor.parsePlaylistJson(invalidJson, json)
+                YtDlpExecutor.parsePlaylistJson("not valid json", json)
             }
             exception.message shouldContain "parse"
         }
 
         @Test
-        @Suppress("ktlint:standard:indent")
-        fun `parsePlaylistJson parses valid NDJSON`() {
-            val ndjson = """
-            {"id": "v1", "title": "Video 1", "playlist_id": "PLtest", "playlist_title": "Test Playlist", "playlist_uploader": "Test Channel"}
-            {"id": "v2", "title": "Video 2", "playlist_id": "PLtest", "playlist_title": "Test Playlist", "playlist_uploader": "Test Channel"}
-        """.trimIndent()
+        fun `parsePlaylistJson parses valid single JSON`() {
+            val singleJson = """
+                {
+                    "id": "PLtest",
+                    "title": "Test Playlist",
+                    "uploader": "Test Channel",
+                    "thumbnail": "https://example.com/playlist-thumb.jpg",
+                    "entries": [
+                        {"id": "v1", "title": "Video 1"},
+                        {"id": "v2", "title": "Video 2"}
+                    ]
+                }
+            """.trimIndent()
 
-            val playlist = YtDlpExecutor.parsePlaylistJson(ndjson, json)
+            val playlist = YtDlpExecutor.parsePlaylistJson(singleJson, json)
 
             playlist.id shouldBe "PLtest"
             playlist.title shouldBe "Test Playlist"
             playlist.uploader shouldBe "Test Channel"
+            playlist.thumbnail shouldBe "https://example.com/playlist-thumb.jpg"
             playlist.entries.size shouldBe 2
             playlist.entries[0].id shouldBe "v1"
             playlist.entries[1].id shouldBe "v2"
         }
 
         @Test
-        fun `parsePlaylistJson parses NDJSON from real yt-dlp output`() {
-            val ndjson = this::class.java.getResource("/test-playlist.json")!!.readText()
+        fun `parsePlaylistJson parses single JSON from real yt-dlp output`() {
+            val singleJson = this::class.java.getResource("/test-playlist.json")!!.readText()
 
-            val playlist = YtDlpExecutor.parsePlaylistJson(ndjson, json)
+            val playlist = YtDlpExecutor.parsePlaylistJson(singleJson, json)
 
             playlist.id shouldBe "PLQlnTldJs0ZSINUQoJ2lY-z1HKO-XUWP8"
             playlist.title shouldBe "Greeking Out Podcast Season 12 | Nat Geo Kids"
             playlist.uploader shouldBe "Nat Geo Kids"
+            playlist.thumbnail shouldBe "https://i.ytimg.com/vi/gUIStb1aVxg/hqdefault.jpg"
             playlist.entries.size shouldBe 11
             playlist.entries[0].id shouldBe "gUIStb1aVxg"
             playlist.entries[0].title shouldContain "Percy Jackson"
@@ -74,7 +81,7 @@ class YtDlpExecutorTest {
         command shouldBe listOf(
             "yt-dlp",
             "--flat-playlist",
-            "--dump-json",
+            "--dump-single-json",
             "https://www.youtube.com/playlist?list=PLtest123",
         )
     }

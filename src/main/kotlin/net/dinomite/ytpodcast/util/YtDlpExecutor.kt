@@ -75,35 +75,19 @@ open class YtDlpExecutor {
         val jsonParser = Json { ignoreUnknownKeys = true }
 
         /**
-         * Parses yt-dlp NDJSON output into playlist metadata.
+         * Parses yt-dlp --dump-single-json output into playlist metadata.
          *
-         * yt-dlp --flat-playlist returns NDJSON (one JSON object per line),
-         * where each line is a video entry containing playlist metadata fields.
+         * yt-dlp --flat-playlist --dump-single-json returns a single JSON object
+         * containing playlist-level fields (id, title, uploader, thumbnail) and
+         * an entries array of video objects.
          *
-         * @param jsonText The NDJSON string from yt-dlp
+         * @param jsonText The single JSON string from yt-dlp
          * @param json The JSON parser to use
          * @return Parsed playlist metadata
          * @throws YtDlpException if parsing fails
          */
         fun parsePlaylistJson(jsonText: String, json: Json): PlaylistMetadata = try {
-            val lines = jsonText.trim().lines().filter { it.isNotBlank() }
-            if (lines.isEmpty()) {
-                throw YtDlpException("No video entries found in playlist output")
-            }
-
-            // Parse all video entries
-            val videos = lines.map { line ->
-                json.decodeFromString<VideoMetadata>(line)
-            }
-
-            // Extract playlist metadata from first entry
-            val first = videos.first()
-            PlaylistMetadata(
-                id = first.playlistId ?: throw YtDlpException("No playlist_id found in output"),
-                title = first.playlistTitle ?: throw YtDlpException("No playlist_title found in output"),
-                uploader = first.playlistUploader,
-                entries = videos,
-            )
+            json.decodeFromString<PlaylistMetadata>(jsonText)
         } catch (e: SerializationException) {
             throw YtDlpException("Failed to parse playlist JSON: ${e.message}", e)
         } catch (e: IllegalArgumentException) {
@@ -135,7 +119,7 @@ open class YtDlpExecutor {
         fun buildPlaylistCommand(playlistId: String): List<String> = listOf(
             "yt-dlp",
             "--flat-playlist",
-            "--dump-json",
+            "--dump-single-json",
             "https://www.youtube.com/playlist?list=$playlistId",
         )
 
