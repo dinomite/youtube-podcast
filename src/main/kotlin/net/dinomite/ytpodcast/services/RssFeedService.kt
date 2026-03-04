@@ -62,7 +62,7 @@ class RssFeedService(private val urlBuilder: UrlBuilder) {
             appendLine("""      <guid isPermaLink="false">${video.id}</guid>""")
             video.uploadDate?.let { appendLine("      <pubDate>${formatPubDate(it)}</pubDate>") }
             video.duration?.let { appendLine("      <itunes:duration>${formatDuration(it)}</itunes:duration>") }
-            video.thumbnail?.let { appendLine("""      <itunes:image href="$it"/>""") }
+            video.bestThumbnail?.let { appendLine("""      <itunes:image href="$it"/>""") }
             video.description?.let { appendLine("      <itunes:summary>${escapeXml(it)}</itunes:summary>") }
             appendLine("    </item>")
         }

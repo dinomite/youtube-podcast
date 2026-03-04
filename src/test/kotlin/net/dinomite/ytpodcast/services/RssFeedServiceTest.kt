@@ -4,6 +4,7 @@ import io.kotest.matchers.string.shouldContain
 import io.mockk.every
 import io.mockk.mockk
 import net.dinomite.ytpodcast.models.PlaylistMetadata
+import net.dinomite.ytpodcast.models.Thumbnail
 import net.dinomite.ytpodcast.models.VideoMetadata
 import net.dinomite.ytpodcast.util.UrlBuilder
 import org.junit.jupiter.api.Test
@@ -132,5 +133,29 @@ class RssFeedServiceTest {
         val oldIndex = rss.indexOf("Old Video")
         assert(newIndex < midIndex) { "New video should appear before mid video" }
         assert(midIndex < oldIndex) { "Mid video should appear before old video" }
+    }
+
+    @Test
+    fun `uses best thumbnail from thumbnails array for episode art`() {
+        val playlist = PlaylistMetadata(
+            id = "PLtest",
+            title = "Test Playlist",
+            entries = listOf(
+                VideoMetadata(
+                    id = "video1",
+                    title = "First Video",
+                    thumbnails = listOf(
+                        Thumbnail(url = "https://example.com/small.jpg", width = 168, height = 94),
+                        Thumbnail(url = "https://example.com/large.jpg", width = 336, height = 188),
+                    ),
+                ),
+            ),
+        )
+        every { urlBuilder.buildEpisodeUrl("video1", any(), any(), any()) } returns
+            "https://test.com/episode/video1.mp3"
+
+        val rss = service.generateFeed(playlist, "https", "test.com", 443)
+
+        rss shouldContain """<itunes:image href="https://example.com/large.jpg"/>"""
     }
 }
