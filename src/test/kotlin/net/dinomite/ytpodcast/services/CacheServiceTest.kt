@@ -134,4 +134,53 @@ class CacheServiceTest {
         // All should still exist (count limit disabled)
         tempDir.listFiles().size shouldBe 10
     }
+
+    @Test
+    fun `getStats returns correct totals and limits`() {
+        val config = CacheConfig(
+            maxSize = 5_000_000_000L,
+            maxCount = 100,
+            directory = tempDir.absolutePath
+        )
+        cacheService = CacheService(config)
+
+        File(tempDir, "video1.mp3").writeBytes(ByteArray(1000))
+        File(tempDir, "video2.mp3").writeBytes(ByteArray(2000))
+
+        val stats = cacheService.getStats()
+
+        stats.totalFiles shouldBe 2
+        stats.totalSizeBytes shouldBe 3000L
+        stats.maxFiles shouldBe 100
+        stats.maxSizeBytes shouldBe 5_000_000_000L
+    }
+
+    @Test
+    fun `getStats returns zeros when cache is empty`() {
+        val stats = cacheService.getStats()
+
+        stats.totalFiles shouldBe 0
+        stats.totalSizeBytes shouldBe 0L
+        stats.maxFiles shouldBe 0
+        stats.maxSizeBytes shouldBe 0L
+    }
+
+    @Test
+    fun `listFiles returns file info for each cached file`() {
+        val file1 = File(tempDir, "abc123.mp3").apply { writeBytes(ByteArray(500)) }
+        val file2 = File(tempDir, "xyz789.mp3").apply { writeBytes(ByteArray(1500)) }
+
+        val files = cacheService.listFiles().sortedBy { it.videoId }
+
+        files.size shouldBe 2
+        files[0].videoId shouldBe "abc123"
+        files[0].sizeBytes shouldBe 500L
+        files[1].videoId shouldBe "xyz789"
+        files[1].sizeBytes shouldBe 1500L
+    }
+
+    @Test
+    fun `listFiles returns empty list when cache is empty`() {
+        cacheService.listFiles() shouldBe emptyList()
+    }
 }

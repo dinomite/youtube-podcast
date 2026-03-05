@@ -2,6 +2,8 @@ package net.dinomite.ytpodcast.services
 
 import java.io.File
 import net.dinomite.ytpodcast.config.CacheConfig
+import net.dinomite.ytpodcast.models.CacheFileInfo
+import net.dinomite.ytpodcast.models.CacheStats
 import org.slf4j.LoggerFactory
 
 /**
@@ -93,6 +95,32 @@ class CacheService(private val config: CacheConfig) {
         bytes >= 1024 * 1024 -> "%.2f MB".format(bytes / (1024.0 * 1024))
         bytes >= 1024 -> "%.2f KB".format(bytes / 1024.0)
         else -> "$bytes B"
+    }
+
+    /**
+     * Returns aggregate statistics about the current state of the cache and its configured limits.
+     */
+    fun getStats(): CacheStats {
+        val files = listCacheFiles()
+        return CacheStats(
+            totalFiles = files.size,
+            totalSizeBytes = files.sumOf { it.length() },
+            maxFiles = config.maxCount,
+            maxSizeBytes = config.maxSize,
+        )
+    }
+
+    /**
+     * Returns metadata for each file currently in the cache.
+     */
+    fun listFiles(): List<CacheFileInfo> {
+        return listCacheFiles().map { file ->
+            CacheFileInfo(
+                videoId = file.nameWithoutExtension,
+                sizeBytes = file.length(),
+                lastModifiedEpochMs = file.lastModified(),
+            )
+        }
     }
 
     fun evictIfNeeded() {
