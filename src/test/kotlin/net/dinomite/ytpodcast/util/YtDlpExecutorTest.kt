@@ -104,7 +104,7 @@ class YtDlpExecutorTest {
         command shouldBe listOf(
             "yt-dlp",
             "-f",
-            "bestaudio",
+            "bestaudio/best",
             "-o",
             "/tmp/output",
             "https://www.youtube.com/watch?v=dQw4w9WgXcQ",

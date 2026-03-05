@@ -145,7 +145,7 @@ open class YtDlpExecutor {
         fun buildRawDownloadCommand(videoId: String, outputPath: String): List<String> = listOf(
             "yt-dlp",
             "-f",
-            "bestaudio",
+            "bestaudio/best",
             "-o",
             outputPath,
             "https://www.youtube.com/watch?v=$videoId",
