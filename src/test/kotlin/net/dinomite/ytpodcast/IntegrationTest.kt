@@ -248,4 +248,56 @@ class IntegrationTest {
             }
         }
     }
+
+    @Nested
+    inner class GetCacheStats {
+        @Test
+        fun `GET cache stats returns stats JSON with auth`() = testApplication {
+            application { testModuleWithStub(StubYtDlpExecutor()) }
+
+            client.get("/cache/stats") {
+                basicAuth("testuser", "testpass")
+            }.apply {
+                status shouldBe HttpStatusCode.OK
+                val body = bodyAsText()
+                body shouldContain "\"totalFiles\""
+                body shouldContain "\"totalSizeBytes\""
+                body shouldContain "\"maxFiles\""
+                body shouldContain "\"maxSizeBytes\""
+            }
+        }
+
+        @Test
+        fun `GET cache stats without credentials returns 401`() = testApplication {
+            application { testModuleWithStub(StubYtDlpExecutor()) }
+
+            client.get("/cache/stats").apply {
+                status shouldBe HttpStatusCode.Unauthorized
+            }
+        }
+    }
+
+    @Nested
+    inner class GetCacheFiles {
+        @Test
+        fun `GET cache files returns empty array for empty cache`() = testApplication {
+            application { testModuleWithStub(StubYtDlpExecutor()) }
+
+            client.get("/cache/files") {
+                basicAuth("testuser", "testpass")
+            }.apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe "[]"
+            }
+        }
+
+        @Test
+        fun `GET cache files without credentials returns 401`() = testApplication {
+            application { testModuleWithStub(StubYtDlpExecutor()) }
+
+            client.get("/cache/files").apply {
+                status shouldBe HttpStatusCode.Unauthorized
+            }
+        }
+    }
 }

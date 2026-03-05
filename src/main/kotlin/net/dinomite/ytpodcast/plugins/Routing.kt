@@ -51,6 +51,8 @@ fun Application.configureRouting(
         authenticate("podcast-auth") {
             handlers.registerShowRoute(this)
             handlers.registerEpisodeRoute(this)
+            handlers.registerCacheStatsRoute(this)
+            handlers.registerCacheFilesRoute(this)
         }
     }
 }
@@ -87,6 +89,18 @@ private class RouteHandlers(
                 )
 
             handleEpisodeRequest(call, videoId)
+        }
+    }
+
+    fun registerCacheStatsRoute(route: Route) {
+        route.get("/cache/stats") {
+            call.respond(cacheService.getStats())
+        }
+    }
+
+    fun registerCacheFilesRoute(route: Route) {
+        route.get("/cache/files") {
+            call.respond(cacheService.listCachedFiles())
         }
     }
 
