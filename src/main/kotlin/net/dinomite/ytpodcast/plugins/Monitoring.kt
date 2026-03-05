@@ -20,7 +20,7 @@ fun Application.configureMonitoring() {
             val status = call.response.status()
             val httpMethod = call.request.httpMethod.value
             val ip = call.request.origin.remoteHost
-            val userAgent = call.request.headers["User-Agent"]
+            val userAgent = call.request.headers["User-Agent"] ?: "-"
             "$httpMethod ${call.request.path()} - $status - $ip - User-Agent: $userAgent"
         }
     }
