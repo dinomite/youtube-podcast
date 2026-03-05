@@ -138,6 +138,24 @@ class RssFeedServiceTest {
     }
 
     @Test
+    fun `uses best thumbnail from playlist thumbnails array for show art`() {
+        val playlist = PlaylistMetadata(
+            id = "PLtest",
+            title = "Test Playlist",
+            thumbnails = listOf(
+                Thumbnail(url = "https://example.com/small.jpg", width = 240, height = 240),
+                Thumbnail(url = "https://example.com/large.jpg", width = 720, height = 720),
+            ),
+            entries = emptyList(),
+        )
+
+        val rss = service.generateFeed(playlist, "https", "test.com", 443)
+
+        rss shouldContain """<itunes:image href="https://example.com/large.jpg"/>"""
+        rss shouldContain "<url>https://example.com/large.jpg</url>"
+    }
+
+    @Test
     fun `uses best thumbnail from thumbnails array for episode art`() {
         val playlist = PlaylistMetadata(
             id = "PLtest",

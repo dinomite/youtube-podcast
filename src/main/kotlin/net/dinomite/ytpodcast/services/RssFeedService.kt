@@ -40,7 +40,7 @@ class RssFeedService(private val urlBuilder: UrlBuilder) {
             appendLine("    <description>${escapeXml(playlist.description ?: "")}</description>")
             appendLine("    <language>en</language>")
             playlist.uploader?.let { appendLine("    <itunes:author>${escapeXml(it)}</itunes:author>") }
-            playlist.thumbnail?.let {
+            playlist.bestThumbnail?.let {
                 appendLine("""    <itunes:image href="$it"/>""")
                 appendLine("    <image>")
                 appendLine("      <url>$it</url>")
