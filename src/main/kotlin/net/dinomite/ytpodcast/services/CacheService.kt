@@ -113,7 +113,7 @@ class CacheService(private val config: CacheConfig) {
     /**
      * Returns metadata for each file currently in the cache.
      */
-    fun listFiles(): List<CacheFileInfo> {
+    fun listCachedFiles(): List<CacheFileInfo> {
         return listCacheFiles().map { file ->
             CacheFileInfo(
                 videoId = file.nameWithoutExtension,

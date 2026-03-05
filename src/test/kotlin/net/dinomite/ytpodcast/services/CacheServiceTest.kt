@@ -1,5 +1,6 @@
 package net.dinomite.ytpodcast.services
 
+import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import java.io.File
 import kotlin.io.path.createTempDirectory
@@ -166,21 +167,23 @@ class CacheServiceTest {
     }
 
     @Test
-    fun `listFiles returns file info for each cached file`() {
+    fun `listCachedFiles returns file info for each cached file`() {
         val file1 = File(tempDir, "abc123.mp3").apply { writeBytes(ByteArray(500)) }
         val file2 = File(tempDir, "xyz789.mp3").apply { writeBytes(ByteArray(1500)) }
 
-        val files = cacheService.listFiles().sortedBy { it.videoId }
+        val files = cacheService.listCachedFiles().sortedBy { it.videoId }
 
         files.size shouldBe 2
         files[0].videoId shouldBe "abc123"
         files[0].sizeBytes shouldBe 500L
+        files[0].lastModifiedEpochMs shouldBeGreaterThan 0L
         files[1].videoId shouldBe "xyz789"
         files[1].sizeBytes shouldBe 1500L
+        files[1].lastModifiedEpochMs shouldBeGreaterThan 0L
     }
 
     @Test
-    fun `listFiles returns empty list when cache is empty`() {
-        cacheService.listFiles() shouldBe emptyList()
+    fun `listCachedFiles returns empty list when cache is empty`() {
+        cacheService.listCachedFiles() shouldBe emptyList()
     }
 }
