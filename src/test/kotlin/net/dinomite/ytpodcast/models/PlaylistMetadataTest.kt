@@ -61,4 +61,58 @@ class PlaylistMetadataTest {
 
         playlist.entries shouldBe emptyList()
     }
+
+    @Test
+    fun `bestThumbnail returns highest resolution thumbnail URL`() {
+        val playlist = PlaylistMetadata(
+            id = "PLtest",
+            title = "Test",
+            thumbnails = listOf(
+                Thumbnail(url = "https://example.com/small.jpg", width = 240, height = 240),
+                Thumbnail(url = "https://example.com/large.jpg", width = 720, height = 720),
+                Thumbnail(url = "https://example.com/medium.jpg", width = 480, height = 480),
+            ),
+        )
+
+        playlist.bestThumbnail shouldBe "https://example.com/large.jpg"
+    }
+
+    @Test
+    fun `bestThumbnail falls back to thumbnail field when thumbnails is empty`() {
+        val playlist = PlaylistMetadata(
+            id = "PLtest",
+            title = "Test",
+            thumbnail = "https://example.com/fallback.jpg",
+        )
+
+        playlist.bestThumbnail shouldBe "https://example.com/fallback.jpg"
+    }
+
+    @Test
+    fun `bestThumbnail returns null when both thumbnails and thumbnail are absent`() {
+        val playlist = PlaylistMetadata(id = "PLtest", title = "Test")
+
+        playlist.bestThumbnail shouldBe null
+    }
+
+    @Test
+    fun `parses thumbnails array from yt-dlp playlist JSON`() {
+        val ytDlpJson = """
+            {
+                "id": "PLtest",
+                "title": "Test Playlist",
+                "thumbnails": [
+                    {"url": "https://example.com/240.jpg", "height": 240, "width": 240, "id": "0", "resolution": "240x240"},
+                    {"url": "https://example.com/720.jpg", "height": 720, "width": 720, "id": "2", "resolution": "720x720"},
+                    {"url": "https://example.com/480.jpg", "height": 480, "width": 480, "id": "1", "resolution": "480x480"}
+                ],
+                "entries": []
+            }
+        """.trimIndent()
+
+        val playlist = json.decodeFromString<PlaylistMetadata>(ytDlpJson)
+
+        playlist.thumbnails.size shouldBe 3
+        playlist.bestThumbnail shouldBe "https://example.com/720.jpg"
+    }
 }
