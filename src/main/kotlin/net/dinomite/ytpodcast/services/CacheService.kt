@@ -113,14 +113,12 @@ class CacheService(private val config: CacheConfig) {
     /**
      * Returns metadata for each file currently in the cache.
      */
-    fun listCachedFiles(): List<CacheFileInfo> {
-        return listCacheFiles().map { file ->
-            CacheFileInfo(
-                videoId = file.nameWithoutExtension,
-                sizeBytes = file.length(),
-                lastModifiedEpochMs = file.lastModified(),
-            )
-        }
+    fun listCachedFiles(): List<CacheFileInfo> = listCacheFiles().map { file ->
+        CacheFileInfo(
+            videoId = file.nameWithoutExtension,
+            sizeBytes = file.length(),
+            lastModifiedEpochMs = file.lastModified(),
+        )
     }
 
     fun evictIfNeeded() {
