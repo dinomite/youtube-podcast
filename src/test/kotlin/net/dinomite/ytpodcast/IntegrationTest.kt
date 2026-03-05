@@ -259,6 +259,7 @@ class IntegrationTest {
                 basicAuth("testuser", "testpass")
             }.apply {
                 status shouldBe HttpStatusCode.OK
+                contentType()?.withoutParameters() shouldBe ContentType.Application.Json
                 val body = bodyAsText()
                 body shouldContain "\"totalFiles\""
                 body shouldContain "\"totalSizeBytes\""
@@ -287,6 +288,7 @@ class IntegrationTest {
                 basicAuth("testuser", "testpass")
             }.apply {
                 status shouldBe HttpStatusCode.OK
+                contentType()?.withoutParameters() shouldBe ContentType.Application.Json
                 bodyAsText() shouldBe "[]"
             }
         }
