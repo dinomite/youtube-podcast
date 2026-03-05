@@ -168,8 +168,8 @@ class CacheServiceTest {
 
     @Test
     fun `listCachedFiles returns file info for each cached file`() {
-        val file1 = File(tempDir, "abc123.mp3").apply { writeBytes(ByteArray(500)) }
-        val file2 = File(tempDir, "xyz789.mp3").apply { writeBytes(ByteArray(1500)) }
+        File(tempDir, "abc123.mp3").apply { writeBytes(ByteArray(500)) }
+        File(tempDir, "xyz789.mp3").apply { writeBytes(ByteArray(1500)) }
 
         val files = cacheService.listCachedFiles().sortedBy { it.videoId }
 
