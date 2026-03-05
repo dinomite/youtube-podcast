@@ -44,6 +44,8 @@ class RssFeedServiceTest {
         rss shouldContain "<description>A test playlist description</description>"
         rss shouldContain "<itunes:author>Test Channel</itunes:author>"
         rss shouldContain """<itunes:image href="https://example.com/thumb.jpg"/>"""
+        rss shouldContain "<image>"
+        rss shouldContain "<url>https://example.com/thumb.jpg</url>"
         rss shouldContain "<item>"
         rss shouldContain "<title>First Video</title>"
         rss shouldContain """<enclosure url="https://test.com/episode/video1.mp3" type="audio/mpeg" length="0"/>"""

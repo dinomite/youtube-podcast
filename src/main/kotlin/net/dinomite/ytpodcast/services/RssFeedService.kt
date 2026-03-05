@@ -40,7 +40,14 @@ class RssFeedService(private val urlBuilder: UrlBuilder) {
             appendLine("    <description>${escapeXml(playlist.description ?: "")}</description>")
             appendLine("    <language>en</language>")
             playlist.uploader?.let { appendLine("    <itunes:author>${escapeXml(it)}</itunes:author>") }
-            playlist.thumbnail?.let { appendLine("""    <itunes:image href="$it"/>""") }
+            playlist.thumbnail?.let {
+                appendLine("""    <itunes:image href="$it"/>""")
+                appendLine("    <image>")
+                appendLine("      <url>$it</url>")
+                appendLine("      <title>${escapeXml(playlist.title)}</title>")
+                appendLine("      <link>https://www.youtube.com/playlist?list=${playlist.id}</link>")
+                appendLine("    </image>")
+            }
             appendLine("    <itunes:explicit>false</itunes:explicit>")
 
             for (video in sortedEntries) {
