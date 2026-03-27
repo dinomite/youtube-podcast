@@ -165,8 +165,9 @@ class IntegrationTest {
                 basicAuth("testuser", "testpass")
             }.apply {
                 status shouldBe HttpStatusCode.BadRequest
-                bodyAsText() shouldContain "bad_request"
-                bodyAsText() shouldContain "Missing url parameter"
+                val body = bodyAsText()
+                body shouldContain "bad_request"
+                body shouldContain "Missing url parameter"
             }
         }
 
@@ -178,8 +179,9 @@ class IntegrationTest {
                 basicAuth("testuser", "testpass")
             }.apply {
                 status shouldBe HttpStatusCode.BadRequest
-                bodyAsText() shouldContain "bad_request"
-                bodyAsText() shouldContain "Invalid YouTube URL"
+                val body = bodyAsText()
+                body shouldContain "bad_request"
+                body shouldContain "Invalid YouTube URL"
             }
         }
 
@@ -191,8 +193,9 @@ class IntegrationTest {
                 basicAuth("testuser", "testpass")
             }.apply {
                 status shouldBe HttpStatusCode.BadRequest
-                bodyAsText() shouldContain "bad_request"
-                bodyAsText() shouldContain "Invalid YouTube URL"
+                val body = bodyAsText()
+                body shouldContain "bad_request"
+                body shouldContain "Invalid YouTube URL"
             }
         }
 
