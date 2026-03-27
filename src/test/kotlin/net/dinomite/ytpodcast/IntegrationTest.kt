@@ -97,6 +97,116 @@ class IntegrationTest {
     }
 
     @Nested
+    inner class GetShowByUrl {
+        private val playlistId = "PLtest123"
+        private val playlist = PlaylistMetadata(
+            id = playlistId,
+            title = "Test Playlist",
+            description = "A test playlist for integration testing",
+            uploader = "Test Channel",
+            thumbnail = "https://example.com/thumb.jpg",
+            entries = listOf(
+                VideoMetadata(
+                    id = "video1",
+                    title = "First Video",
+                    description = "First video description",
+                    duration = 180,
+                    uploadDate = "20240115",
+                    uploader = "Test Channel",
+                ),
+            ),
+        )
+
+        @Test
+        fun `GET show with canonical playlist URL returns RSS feed`() = testApplication {
+            val stubExecutor = StubYtDlpExecutor().apply { givenPlaylist(playlistId, playlist) }
+            application { testModuleWithStub(stubExecutor) }
+
+            client.get("/show?url=https://www.youtube.com/playlist?list=$playlistId") {
+                basicAuth("testuser", "testpass")
+            }.apply {
+                status shouldBe HttpStatusCode.OK
+                contentType()?.withoutParameters() shouldBe ContentType.Application.Rss
+                bodyAsText() shouldContain "<title>Test Playlist</title>"
+            }
+        }
+
+        @Test
+        fun `GET show with watch URL containing list param returns RSS feed`() = testApplication {
+            val stubExecutor = StubYtDlpExecutor().apply { givenPlaylist(playlistId, playlist) }
+            application { testModuleWithStub(stubExecutor) }
+
+            client.get("/show?url=https://www.youtube.com/watch?v=abc123%26list=$playlistId") {
+                basicAuth("testuser", "testpass")
+            }.apply {
+                status shouldBe HttpStatusCode.OK
+                contentType()?.withoutParameters() shouldBe ContentType.Application.Rss
+            }
+        }
+
+        @Test
+        fun `GET show with youtu be URL returns RSS feed`() = testApplication {
+            val stubExecutor = StubYtDlpExecutor().apply { givenPlaylist(playlistId, playlist) }
+            application { testModuleWithStub(stubExecutor) }
+
+            client.get("/show?url=https://youtu.be/abc123?list=$playlistId") {
+                basicAuth("testuser", "testpass")
+            }.apply {
+                status shouldBe HttpStatusCode.OK
+                contentType()?.withoutParameters() shouldBe ContentType.Application.Rss
+            }
+        }
+
+        @Test
+        fun `GET show without url param returns 400`() = testApplication {
+            application { testModuleWithStub(StubYtDlpExecutor()) }
+
+            client.get("/show") {
+                basicAuth("testuser", "testpass")
+            }.apply {
+                status shouldBe HttpStatusCode.BadRequest
+                bodyAsText() shouldContain "bad_request"
+                bodyAsText() shouldContain "Missing url parameter"
+            }
+        }
+
+        @Test
+        fun `GET show with URL missing list param returns 400`() = testApplication {
+            application { testModuleWithStub(StubYtDlpExecutor()) }
+
+            client.get("/show?url=https://www.youtube.com/watch?v=abc123") {
+                basicAuth("testuser", "testpass")
+            }.apply {
+                status shouldBe HttpStatusCode.BadRequest
+                bodyAsText() shouldContain "bad_request"
+                bodyAsText() shouldContain "Invalid YouTube URL"
+            }
+        }
+
+        @Test
+        fun `GET show with malformed URL returns 400`() = testApplication {
+            application { testModuleWithStub(StubYtDlpExecutor()) }
+
+            client.get("/show?url=not+a+url") {
+                basicAuth("testuser", "testpass")
+            }.apply {
+                status shouldBe HttpStatusCode.BadRequest
+                bodyAsText() shouldContain "bad_request"
+                bodyAsText() shouldContain "Invalid YouTube URL"
+            }
+        }
+
+        @Test
+        fun `GET show by url without credentials returns 401`() = testApplication {
+            application { testModuleWithStub(StubYtDlpExecutor()) }
+
+            client.get("/show?url=https://www.youtube.com/playlist?list=$playlistId").apply {
+                status shouldBe HttpStatusCode.Unauthorized
+            }
+        }
+    }
+
+    @Nested
     inner class GetEpisode {
         @Test
         fun `GET episode returns MP3 file for valid video`() = testApplication {

@@ -26,6 +26,7 @@ import net.dinomite.ytpodcast.services.YouTubeMetadataService
 import net.dinomite.ytpodcast.util.FfmpegException
 import net.dinomite.ytpodcast.util.UrlBuilder
 import net.dinomite.ytpodcast.util.YtDlpException
+import net.dinomite.ytpodcast.util.extractPlaylistId
 import org.slf4j.LoggerFactory
 
 fun Application.configureRouting(
@@ -50,6 +51,7 @@ fun Application.configureRouting(
 
         authenticate("podcast-auth") {
             handlers.registerShowRoute(this)
+            handlers.registerShowByUrlRoute(this)
             handlers.registerEpisodeRoute(this)
             handlers.registerCacheStatsRoute(this)
             handlers.registerCacheFilesRoute(this)
@@ -76,6 +78,22 @@ private class RouteHandlers(
                     ErrorResponse("bad_request", "Missing playlistId"),
                 )
 
+            handleShowRequest(call, playlistId)
+        }
+    }
+
+    fun registerShowByUrlRoute(route: Route) {
+        route.get("/show") {
+            val url = call.request.queryParameters["url"]
+                ?: return@get call.respond(
+                    HttpStatusCode.BadRequest,
+                    ErrorResponse("bad_request", "Missing url parameter"),
+                )
+            val playlistId = extractPlaylistId(url)
+                ?: return@get call.respond(
+                    HttpStatusCode.BadRequest,
+                    ErrorResponse("bad_request", "Invalid YouTube URL: $url"),
+                )
             handleShowRequest(call, playlistId)
         }
     }
