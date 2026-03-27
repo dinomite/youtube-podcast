@@ -64,34 +64,39 @@ The application will fail to start if auth credentials are blank.
 **Source structure**:
 - `plugins/` - Ktor plugin configurations (Serialization, Monitoring, HTTP, Routing, Authentication)
 - `plugins/Authentication.kt` - HTTP Basic Auth configuration
-- `models/` - Data classes (ErrorResponse, PlaylistMetadata, VideoMetadata)
-- `services/` - Business logic services (RssFeedService, AudioService, CacheService, YouTubeMetadataService)
-- `util/` - Utilities (YtDlpExecutor, UrlBuilder, SizeParser, YtDlpException)
+- `models/` - Data classes (ErrorResponse, PlaylistMetadata, VideoMetadata, Thumbnail, CacheFileInfo, CacheStats)
+- `services/` - Business logic services (RssFeedService, AudioService, CacheService, YouTubeMetadataService, StreamingAudioService)
+- `util/` - Utilities (YtDlpExecutor, YtDlpException, FfmpegExecutor, FfmpegException, UrlBuilder, SizeParser)
 - `config/` - Application configuration (AppConfig: baseUrl, baseDir; CacheConfig: maxSize, maxCount, directory)
 
 **API Routes** (defined in `plugins/Routing.kt`):
-- `GET /` - Root endpoint
-- `GET /health` - Health check
+- `GET /` - Root endpoint (public)
+- `GET /health` - Health check (public)
 - `GET /show/{playlistId}` - RSS feed for a YouTube playlist (content-type: application/rss+xml)
+- `GET /show?url=<youtube-url>` - RSS feed using a full YouTube playlist URL (canonical playlist, watch-with-list, or youtu.be format)
 - `GET /episode/{videoId}.mp3` - Audio file for episode (content-type: audio/mpeg)
+- `GET /cache/stats` - Cache statistics (CacheStats JSON)
+- `GET /cache/files` - List of cached files (CacheFileInfo JSON array)
 
 **Authentication**:
-- `/show/{playlistId}` and `/episode/{videoId}.mp3` require HTTP Basic Auth
+- `/show/{playlistId}`, `/episode/{videoId}.mp3`, `/cache/stats`, and `/cache/files` require HTTP Basic Auth
 - `/` and `/health` are public (no authentication required)
 - Credentials configured via `application.conf` with `AUTH_USERNAME`/`AUTH_PASSWORD` env var overrides
 - Application fails to start if auth credentials are not configured
 
 **Routing Architecture**:
-- Single `configureRouting()` function accepting AppConfig, YouTubeMetadataService, and CacheService
+- Single `configureRouting()` function accepting AppConfig, YouTubeMetadataService, CacheService, and StreamingAudioService
 - `RouteHandlers` private class encapsulating endpoint logic
 - Sophisticated error handling via `YtDlpErrorConfig` - maps yt-dlp errors to HTTP status codes
 - Returns 404 for "not found" errors, 500 for other failures
+- Episode route checks cache first; on miss, downloads raw audio via yt-dlp then streams ffmpeg conversion to client
 
 **Service Layer**:
 - `YouTubeMetadataService` - Fetches playlist/video metadata via yt-dlp
 - `RssFeedService` - Generates RSS XML with iTunes podcast namespace, handles XML escaping, sorting
 - `AudioService` - Downloads audio to configured temp directory
-- `CacheService` - Manages cached audio files with LRU eviction, enforces size/count limits
+- `StreamingAudioService` - Downloads raw audio then streams ffmpeg MP3 conversion to client while caching
+- `CacheService` - Manages cached audio files with LRU eviction, enforces size/count limits; provides `getStats()` and `listCachedFiles()`
 - `UrlBuilder` - Intelligent URL generation using AppConfig or request context
 
 ## Testing
@@ -113,6 +118,7 @@ The application will fail to start if auth credentials are blank.
   - `givenPlaylist(id, metadata)` - Configures stub responses for playlist fetches
   - `givenAudio(videoId, content)` - Configures stub responses for audio downloads
   - Throws `YtDlpException` for unconfigured requests
+- `testsupport/StubFfmpegExecutor.kt` - Test double for FfmpegExecutor
 - Uses Ktor's `testApplication` with dependency injection via test helper functions (`testModule()`, `testModuleWithStub()`)
 - kotest matchers (`shouldBe`, `shouldContain`) for assertions
 - JUnit 5 with `@Nested` classes for test organization
