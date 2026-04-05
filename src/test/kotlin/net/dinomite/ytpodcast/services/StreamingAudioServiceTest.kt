@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import kotlin.io.path.createTempDirectory
+import kotlinx.coroutines.runBlocking
 import net.dinomite.ytpodcast.util.ConversionProcess
 import net.dinomite.ytpodcast.util.FfmpegExecutor
 import org.junit.jupiter.api.AfterEach
@@ -32,7 +33,7 @@ class StreamingAudioServiceTest {
     }
 
     @Test
-    fun `streamConvertedAudio writes ffmpeg output to outputStream`() {
+    fun `streamConvertedAudio writes ffmpeg output to outputStream`(): Unit = runBlocking {
         val rawFile = File(cacheDir, "vid1.raw").apply { writeText("raw audio") }
         val mp3Bytes = "fake mp3 data".toByteArray()
 
@@ -49,7 +50,7 @@ class StreamingAudioServiceTest {
     }
 
     @Test
-    fun `streamConvertedAudio caches the converted MP3`() {
+    fun `streamConvertedAudio caches the converted MP3`(): Unit = runBlocking {
         val rawFile = File(cacheDir, "vid2.raw").apply { writeText("raw audio") }
         val mp3Bytes = "cached mp3 data".toByteArray()
 
@@ -68,7 +69,7 @@ class StreamingAudioServiceTest {
     }
 
     @Test
-    fun `streamConvertedAudio deletes raw file after conversion`() {
+    fun `streamConvertedAudio deletes raw file after conversion`(): Unit = runBlocking {
         val rawFile = File(cacheDir, "vid3.raw").apply { writeText("raw audio") }
         val mp3Bytes = "mp3 data".toByteArray()
 
@@ -85,7 +86,7 @@ class StreamingAudioServiceTest {
     }
 
     @Test
-    fun `streamConvertedAudio waits for ffmpeg process to complete`() {
+    fun `streamConvertedAudio waits for ffmpeg process to complete`(): Unit = runBlocking {
         val rawFile = File(cacheDir, "vid4.raw").apply { writeText("raw audio") }
 
         every { mockAudioService.downloadToTempFile("vid4") } returns rawFile
