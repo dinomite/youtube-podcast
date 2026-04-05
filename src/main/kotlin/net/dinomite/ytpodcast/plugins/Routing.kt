@@ -126,43 +126,45 @@ private class RouteHandlers(
     }
 
     private suspend fun handleEpisodeRequest(call: ApplicationCall, videoId: String) {
-        try {
-            // Check cache first
-            val cachedFile = cacheService.getCachedFile(videoId)
-            if (cachedFile != null) {
+        streamingAudioService.withVideoLock(videoId) {
+            try {
+                // Check cache first
+                val cachedFile = cacheService.getCachedFile(videoId)
+                if (cachedFile != null) {
+                    call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"$videoId.mp3\"")
+                    call.respondFile(cachedFile)
+                    return@withVideoLock
+                }
+
+                // Cache miss: download raw audio first (errors here get proper HTTP status)
+                cacheService.evictIfNeeded()
+                val rawFile = streamingAudioService.downloadRawAudio(videoId)
+
+                // Stream conversion to client (HTTP 200 sent at this point)
                 call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"$videoId.mp3\"")
-                call.respondFile(cachedFile)
-                return
+                call.respondOutputStream(contentType = ContentType.Audio.MPEG) {
+                    streamingAudioService.streamConversion(videoId, rawFile, this)
+                }
+            } catch (e: YtDlpException) {
+                logger.error("Failed to download episode $videoId", e)
+                respondToYtDlpError(
+                    call = call,
+                    exception = e,
+                    errorConfig = YtDlpErrorConfig(
+                        notFoundCode = "not_found",
+                        notFoundMessage = "Video not found: $videoId",
+                        errorCode = "download_error",
+                        errorPrefix = "Failed to download episode",
+                        additionalNotFoundKeywords = listOf("private"),
+                    ),
+                )
+            } catch (e: FfmpegException) {
+                logger.error("Failed to convert episode $videoId", e)
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    ErrorResponse("conversion_error", "Failed to convert episode: ${e.message}"),
+                )
             }
-
-            // Cache miss: download raw audio first (errors here get proper HTTP status)
-            cacheService.evictIfNeeded()
-            val rawFile = streamingAudioService.downloadRawAudio(videoId)
-
-            // Stream conversion to client (HTTP 200 sent at this point)
-            call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"$videoId.mp3\"")
-            call.respondOutputStream(contentType = ContentType.Audio.MPEG) {
-                streamingAudioService.streamConversion(videoId, rawFile, this)
-            }
-        } catch (e: YtDlpException) {
-            logger.error("Failed to download episode $videoId", e)
-            respondToYtDlpError(
-                call = call,
-                exception = e,
-                errorConfig = YtDlpErrorConfig(
-                    notFoundCode = "not_found",
-                    notFoundMessage = "Video not found: $videoId",
-                    errorCode = "download_error",
-                    errorPrefix = "Failed to download episode",
-                    additionalNotFoundKeywords = listOf("private"),
-                ),
-            )
-        } catch (e: FfmpegException) {
-            logger.error("Failed to convert episode $videoId", e)
-            call.respond(
-                HttpStatusCode.InternalServerError,
-                ErrorResponse("conversion_error", "Failed to convert episode: ${e.message}"),
-            )
         }
     }
 
