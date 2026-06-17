@@ -37,6 +37,37 @@ class CacheService(private val config: CacheConfig) {
     }
 
     /**
+     * Creates a unique temporary file path for writing a cache entry.
+     * Use this with [commitTempFile] to perform an atomic cache update.
+     *
+     * @param videoId The YouTube video ID
+     * @return A unique temporary file in the cache directory
+     */
+    fun createTempCacheFile(videoId: String): File =
+        File.createTempFile("cache-$videoId-", ".mp3.tmp", File(config.directory).apply { mkdirs() })
+
+    /**
+     * Atomically renames a temporary cache file to its final location.
+     * If the final file already exists (e.g. from a concurrent write), it is overwritten.
+     *
+     * @param videoId The YouTube video ID
+     * @param tempFile The temporary file from [createTempCacheFile]
+     * @return The final cached file
+     * @throws IllegalStateException if rename fails
+     */
+    fun commitTempFile(videoId: String, tempFile: File): File {
+        val finalFile = File(config.directory, "$videoId.mp3")
+        val renamed = tempFile.renameTo(finalFile)
+        if (!renamed) {
+            logger.error("Failed to rename {} to {}", tempFile.name, finalFile.name)
+            tempFile.delete()
+            error("Failed to commit cache file for $videoId")
+        }
+        touchFile(finalFile)
+        return finalFile
+    }
+
+    /**
      * Initializes the cache by scanning the directory and enforcing limits.
      *
      * Should be called once at application startup before serving requests.

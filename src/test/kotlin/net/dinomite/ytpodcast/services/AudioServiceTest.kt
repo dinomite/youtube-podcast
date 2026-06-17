@@ -39,7 +39,8 @@ class AudioServiceTest {
         try {
             verify { ytDlpExecutor.downloadRawAudio("abc123", any()) }
             result.exists() shouldBe true
-            result.name shouldBe "abc123.raw"
+            result.name shouldBe fileSlot.captured.name
+            result.name shouldBe fileSlot.captured.name
         } finally {
             result.delete()
         }
