@@ -24,7 +24,7 @@ class AudioService(private val ytDlpExecutor: YtDlpExecutor, private val tempDir
      * @throws net.dinomite.ytpodcast.util.YtDlpException if the download fails
      */
     fun downloadToTempFile(videoId: String): File {
-        val tempFile = File(tempDir, "$videoId.raw")
+        val tempFile = File.createTempFile("yt-dlp-$videoId-", ".raw", File(tempDir).apply { mkdirs() })
         ytDlpExecutor.downloadRawAudio(videoId, tempFile)
         return tempFile
     }

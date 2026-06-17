@@ -10,6 +10,12 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.testing.testApplication
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import java.io.File
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import io.ktor.utils.io.toByteArray
 import net.dinomite.ytpodcast.models.PlaylistMetadata
 import net.dinomite.ytpodcast.models.VideoMetadata
@@ -134,6 +140,46 @@ class IntegrationTest {
                 status shouldBe HttpStatusCode.NotFound
                 bodyAsText() shouldContain "not_found"
             }
+        }
+
+        @Test
+        fun `should only download once for concurrent requests`() = testApplication {
+            val stubExecutor = mockk<StubYtDlpExecutor>()
+            val fakeAudioContent = "fake MP3 content for testing".toByteArray()
+            
+            // Return content, but delay so we can overlap requests
+            every { stubExecutor.downloadRawAudio(any(), any()) } answers {
+                Thread.sleep(100)
+                secondArg<File>().writeBytes(fakeAudioContent)
+            }
+            // Need to mock other methods used in routing/show
+            every { stubExecutor.fetchPlaylist(any()) } throws RuntimeException("Not needed for this test")
+
+            application {
+                testModuleWithStub(stubExecutor)
+            }
+
+            coroutineScope {
+                val deferred1 = async {
+                    client.get("/episode/testvideo.mp3") {
+                        basicAuth("testuser", "testpass")
+                    }
+                }
+                val deferred2 = async {
+                    client.get("/episode/testvideo.mp3") {
+                        basicAuth("testuser", "testpass")
+                    }
+                }
+
+                val response1 = deferred1.await()
+                val response2 = deferred2.await()
+
+                response1.status shouldBe HttpStatusCode.OK
+                response2.status shouldBe HttpStatusCode.OK
+            }
+            
+            // Verify downloadRawAudio was only called once
+            verify(exactly = 1) { stubExecutor.downloadRawAudio("testvideo", any()) }
         }
     }
 
